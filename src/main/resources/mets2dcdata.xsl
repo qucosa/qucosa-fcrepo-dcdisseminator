@@ -30,6 +30,15 @@
         <apply-templates select="mods:relatedItem/mods:identifier"/>
         <apply-templates select="mods:abstract[@type='summary']"/>
         <apply-templates select="mods:classification"/>
+        <choose>
+            <when test="mods:name[@type='personal' and matches(mods:role/mods:roleTerm[@type='code'], 'aut|cmp')]">
+                <apply-templates
+                        select="mods:name[@type='personal' and matches(mods:role/mods:roleTerm[@type='code'], 'aut|cmp')]"/>
+            </when>
+            <otherwise>
+                <apply-templates select="mods:name[@type='corporate' and mods:role/mods:roleTerm[@type='code']='edt']"/>
+            </otherwise>
+        </choose>
     </template>
 
     <template match="slub:info">
@@ -96,6 +105,24 @@
         <dc:classification>
             <value-of select="replace(., ',', ';')"/>
         </dc:classification>
+    </template>
+
+    <template match="mods:name[@type='personal']">
+        <dc:creator>
+            <variable name="familyName" select="mods:namePart[@type='family']"/>
+            <variable name="givenName" select="mods:namePart[@type='given']"/>
+            <value-of select="$familyName"/>
+            <if test="$familyName != ''">
+                <text>, </text>
+            </if>
+            <value-of select="$givenName"/>
+        </dc:creator>
+    </template>
+
+    <template match="mods:name[@type='corporate']">
+        <dc:creator>
+            <value-of select="mods:namePart[1]"/>
+        </dc:creator>
     </template>
 
     <!-- eat all unmatched text content -->
