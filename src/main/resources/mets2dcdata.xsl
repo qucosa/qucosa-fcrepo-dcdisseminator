@@ -37,7 +37,7 @@
     </template>
 
     <template match="mods:titleInfo">
-        <dc:title xml:lang="{@lang}">
+        <dc:title>
             <value-of select="mods:title"/>
             <variable name="titleInfoLang" select="@lang"/>
             <if test="../mods:titleInfo[@lang=$titleInfoLang]/mods:subTitle">
@@ -72,8 +72,7 @@
     </template>
 
     <template match="mods:abstract">
-        <dc:description xml:lang="{@lang}">
-            <variable name="abstractLang" select="@lang"/>
+        <dc:description>
             <value-of select="."/>
             <if test="../mods:tableOfContents">
                 <value-of select="concat(':', ../mods:tableOfContents)"/>
@@ -88,7 +87,7 @@
     </template>
 
     <template match="mods:classification[@authority='z']">
-        <dc:classification xml:lang="{@lang}">
+        <dc:classification>
             <value-of select="."/>
         </dc:classification>
     </template>
