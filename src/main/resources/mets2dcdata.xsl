@@ -26,6 +26,9 @@
     <template match="mods:mods">
         <apply-templates select="mods:titleInfo[@usage='primary']"/>
         <apply-templates select="mods:identifier[@type='qucosa:urn']"/>
+        <apply-templates select="mods:identifier[@type='qucosa:doi']"/>
+        <apply-templates select="mods:identifier[@type='isbn']"/>
+        <apply-templates select="mods:identifier[@type='issn']"/>
         <apply-templates select="mods:identifier[@type='swb-ppn']"/>
         <apply-templates select="mods:language/mods:languageTerm[@type='code']"/>
         <apply-templates select="mods:relatedItem/mods:identifier"/>
