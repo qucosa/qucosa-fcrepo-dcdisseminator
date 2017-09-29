@@ -19,6 +19,7 @@
         <oai_dc:dc>
             <apply-templates select="mets:dmdSec[@ID='DMD_000']/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods"/>
             <apply-templates select="mets:amdSec/mets:techMD/mets:mdWrap/mets:xmlData/slub:info"/>
+            <apply-templates select="mets:structMap/mets:div"/>
         </oai_dc:dc>
     </template>
 
@@ -56,9 +57,9 @@
         </dc:title>
     </template>
 
-    <template match="slub:documentType">
+    <template match="mets:structMap[@TYPE='LOGICAL']/mets:div[1]">
         <dc:type>
-            <value-of select="."/>
+            <value-of select="@TYPE"/>
         </dc:type>
     </template>
 
