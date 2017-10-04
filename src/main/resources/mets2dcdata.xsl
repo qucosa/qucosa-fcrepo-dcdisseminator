@@ -43,6 +43,7 @@
                 <apply-templates select="mods:name[@type='corporate' and mods:role/mods:roleTerm[@type='code']='edt']"/>
             </otherwise>
         </choose>
+        <apply-templates select="mods:originInfo" />
     </template>
 
     <template match="slub:info">
@@ -128,6 +129,30 @@
             <value-of select="mods:namePart[1]"/>
         </dc:creator>
     </template>
+
+	<template match="mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes']">
+		<dc:date>
+			<value-of select="substring(. ,1 ,10)" />
+		</dc:date>
+	</template>
+	
+	<template match="mods:originInfo[@eventType='publication']">
+		<dc:date>
+			<value-of select="substring(. ,1 ,10)" />
+		</dc:date>
+	</template>
+	
+	<template match="mods:originInfo[@eventType='submission']">
+		<dc:date>
+			<value-of select="substring(. ,1 ,10)" />
+		</dc:date>
+	</template>
+	
+	<template match="mods:originInfo[@eventType='defence']">
+		<dc:date>
+			<value-of select="substring(. ,1 ,10)" />
+		</dc:date>
+	</template>
 
     <!-- eat all unmatched text content -->
     <template match="text()"/>
