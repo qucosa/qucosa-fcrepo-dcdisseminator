@@ -41,6 +41,7 @@
 
     <template match="slub:info">
         <apply-templates select="slub:documentType"/>
+        <apply-templates select="slub:funding/slub:project"/>
     </template>
 
     <template match="mods:titleInfo">
@@ -163,6 +164,12 @@
 		<dc:date>
 			<value-of select="substring(. ,1 ,10)" />
 		</dc:date>
+	</template>
+	
+	<template match="slub:funding/slub:project">
+		<dc:relation>
+			<value-of select="." />
+		</dc:relation>
 	</template>
 
     <!-- eat all unmatched text content -->
