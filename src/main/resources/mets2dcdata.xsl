@@ -34,15 +34,8 @@
         <apply-templates select="mods:relatedItem/mods:identifier"/>
         <apply-templates select="mods:abstract[@type='summary']"/>
         <apply-templates select="mods:classification"/>
-        <choose>
-            <when test="mods:name[@type='personal' and matches(mods:role/mods:roleTerm[@type='code'], 'aut|cmp')]">
-                <apply-templates
-                        select="mods:name[@type='personal' and matches(mods:role/mods:roleTerm[@type='code'], 'aut|cmp')]"/>
-            </when>
-            <otherwise>
-                <apply-templates select="mods:name[@type='corporate' and mods:role/mods:roleTerm[@type='code']='edt']"/>
-            </otherwise>
-        </choose>
+        <apply-templates select="mods:name[@type='personal']"/>
+        <apply-templates select="mods:name[@type='corporate']"/>
         <apply-templates select="mods:originInfo" />
     </template>
 
@@ -55,8 +48,7 @@
             <value-of select="mods:title"/>
             <variable name="titleInfoLang" select="@lang"/>
             <if test="../mods:titleInfo[@lang=$titleInfoLang]/mods:subTitle">
-                <value-of
-                        select="concat(':', string-join(../mods:titleInfo[@lang=$titleInfoLang][not(@type='alternative')]/mods:subTitle, ':'))"/>
+                <value-of select="concat(':', string-join(../mods:titleInfo[@lang=$titleInfoLang][not(@type='alternative')]/mods:subTitle, ':'))"/>
             </if>
         </dc:title>
     </template>
@@ -113,21 +105,40 @@
     </template>
 
     <template match="mods:name[@type='personal']">
-        <dc:creator>
-            <variable name="familyName" select="mods:namePart[@type='family']"/>
-            <variable name="givenName" select="mods:namePart[@type='given']"/>
-            <value-of select="$familyName"/>
-            <if test="$familyName != ''">
-                <text>, </text>
-            </if>
-            <value-of select="$givenName"/>
-        </dc:creator>
+        <variable name="familyName" select="mods:namePart[@type='family']"/>
+        <variable name="givenName" select="mods:namePart[@type='given']"/>
+        <variable name="code" select="mods:role/mods:roleTerm[@type='code']/text()" />
+        
+        <choose>
+       		<when test="$code = 'aut' or $code = 'cmp'">
+       			<dc:creator>
+       				<value-of select="if($familyName != '') then concat($familyName, ',', $givenName) else $givenName" />
+       			</dc:creator>
+       		</when>
+       		<when test="$code = 'rev' or $code = 'ctb' or $code = 'ths' or $code = 'sad' or $code = 'pbl' 
+       					or $code = 'ill' or $code = 'edt' or $code = 'oth' or $code = 'trl'">
+       			<dc:contributor>
+       				<value-of select="if($familyName != '') then concat($familyName, ',', $givenName) else $givenName" />
+       			</dc:contributor>
+       		</when>
+        </choose>
     </template>
 
     <template match="mods:name[@type='corporate']">
-        <dc:creator>
-            <value-of select="mods:namePart[1]"/>
-        </dc:creator>
+    	<variable name="code" select="mods:role/mods:roleTerm[@type='code']/text()" />
+        
+        <choose>
+        	<when test="$code = 'dgg'">
+        		<dc:contributor>
+        			<value-of select="mods:namePart[1]"/>
+        		</dc:contributor>
+        	</when>
+        	<when test="$code = 'edt' and not(../mods:name[@type='personal']/mods:role/mods:roleTerm[@type='code' and .='edt'])">
+        		<dc:contributor>
+        			<value-of select="mods:namePart[1]"/>
+        		</dc:contributor>
+        	</when>
+        </choose>
     </template>
 
 	<template match="mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes']">
