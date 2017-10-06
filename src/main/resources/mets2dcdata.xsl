@@ -139,7 +139,22 @@
         			<value-of select="mods:namePart[1]"/>
         		</dc:contributor>
         	</when>
+        	<when test="$code = 'pbl'">
+        		<dc:publisher>
+        			<value-of select="mods:namePart[1]" />
+        		</dc:publisher>
+        	</when>
         </choose>
+    </template>
+    
+     <template match="mods:name[@type='corporate' and @displayLabel='mapping-hack-default-publisher']">
+     	<variable name="pblId" select="@ID" />
+     	
+     	<if test="not(../mods:name[@type='corporate' and mods:role/mods:roleTerm[@type='code']='pbl'])">
+       		<dc:publisher>
+       			<value-of select="../mods:extension/slub:info/slub:corporation[@ref=$pblId]/slub:university" />
+       		</dc:publisher>
+       	</if>
     </template>
 
 	<template match="mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes']">
