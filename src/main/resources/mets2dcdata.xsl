@@ -125,7 +125,7 @@
         </choose>
     </template>
 
-    <template match="mods:name[@type='corporate']">
+    <template match="mods:name[@type='corporate' and @displayLabel!='mapping-hack-default-publisher']">
     	<variable name="code" select="mods:role/mods:roleTerm[@type='code']/text()" />
         
         <choose>
