@@ -36,7 +36,7 @@
         <apply-templates select="mods:classification"/>
         <apply-templates select="mods:name[@type='personal']"/>
         <apply-templates select="mods:name[@type='corporate']"/>
-        <apply-templates select="mods:originInfo" />
+        <apply-templates select="mods:originInfo"/>
     </template>
 
     <template match="slub:info">
@@ -49,7 +49,8 @@
             <value-of select="mods:title"/>
             <variable name="titleInfoLang" select="@lang"/>
             <if test="../mods:titleInfo[@lang=$titleInfoLang]/mods:subTitle">
-                <value-of select="concat(':', string-join(../mods:titleInfo[@lang=$titleInfoLang][not(@type='alternative')]/mods:subTitle, ':'))"/>
+                <value-of
+                        select="concat(':', string-join(../mods:titleInfo[@lang=$titleInfoLang][not(@type='alternative')]/mods:subTitle, ':'))"/>
             </if>
         </dc:title>
     </template>
@@ -108,84 +109,84 @@
     <template match="mods:name[@type='personal']">
         <variable name="familyName" select="mods:namePart[@type='family']"/>
         <variable name="givenName" select="mods:namePart[@type='given']"/>
-        <variable name="code" select="mods:role/mods:roleTerm[@type='code']/text()" />
-        
+        <variable name="code" select="mods:role/mods:roleTerm[@type='code']/text()"/>
+
         <choose>
-       		<when test="$code = 'aut' or $code = 'cmp'">
-       			<dc:creator>
-       				<value-of select="if($familyName != '') then concat($familyName, ',', $givenName) else $givenName" />
-       			</dc:creator>
-       		</when>
-       		<when test="$code = 'rev' or $code = 'ctb' or $code = 'ths' or $code = 'sad' or $code = 'pbl' 
+            <when test="$code = 'aut' or $code = 'cmp'">
+                <dc:creator>
+                    <value-of select="if($familyName != '') then concat($familyName, ',', $givenName) else $givenName"/>
+                </dc:creator>
+            </when>
+            <when test="$code = 'rev' or $code = 'ctb' or $code = 'ths' or $code = 'sad' or $code = 'pbl'
        					or $code = 'ill' or $code = 'edt' or $code = 'oth' or $code = 'trl'">
-       			<dc:contributor>
-       				<value-of select="if($familyName != '') then concat($familyName, ',', $givenName) else $givenName" />
-       			</dc:contributor>
-       		</when>
+                <dc:contributor>
+                    <value-of select="if($familyName != '') then concat($familyName, ',', $givenName) else $givenName"/>
+                </dc:contributor>
+            </when>
         </choose>
     </template>
 
     <template match="mods:name[@type='corporate' and @displayLabel!='mapping-hack-default-publisher']">
-    	<variable name="code" select="mods:role/mods:roleTerm[@type='code']/text()" />
-        
+        <variable name="code" select="mods:role/mods:roleTerm[@type='code']/text()"/>
+
         <choose>
-        	<when test="$code = 'dgg'">
-        		<dc:contributor>
-        			<value-of select="mods:namePart[1]"/>
-        		</dc:contributor>
-        	</when>
-        	<when test="$code = 'edt' and not(../mods:name[@type='personal']/mods:role/mods:roleTerm[@type='code' and .='edt'])">
-        		<dc:contributor>
-        			<value-of select="mods:namePart[1]"/>
-        		</dc:contributor>
-        	</when>
-        	<when test="$code = 'pbl'">
-        		<dc:publisher>
-        			<value-of select="mods:namePart[1]" />
-        		</dc:publisher>
-        	</when>
+            <when test="$code = 'dgg'">
+                <dc:contributor>
+                    <value-of select="mods:namePart[1]"/>
+                </dc:contributor>
+            </when>
+            <when test="$code = 'edt' and not(../mods:name[@type='personal']/mods:role/mods:roleTerm[@type='code' and .='edt'])">
+                <dc:contributor>
+                    <value-of select="mods:namePart[1]"/>
+                </dc:contributor>
+            </when>
+            <when test="$code = 'pbl'">
+                <dc:publisher>
+                    <value-of select="mods:namePart[1]"/>
+                </dc:publisher>
+            </when>
         </choose>
     </template>
-    
-     <template match="mods:name[@type='corporate' and @displayLabel='mapping-hack-default-publisher']">
-     	<variable name="pblId" select="@ID" />
-     	
-     	<if test="not(../mods:name[@type='corporate' and mods:role/mods:roleTerm[@type='code']='pbl'])">
-       		<dc:publisher>
-       			<value-of select="../mods:extension/slub:info/slub:corporation[@ref=$pblId]/slub:university" />
-       		</dc:publisher>
-       	</if>
+
+    <template match="mods:name[@type='corporate' and @displayLabel='mapping-hack-default-publisher']">
+        <variable name="pblId" select="@ID"/>
+
+        <if test="not(../mods:name[@type='corporate' and mods:role/mods:roleTerm[@type='code']='pbl'])">
+            <dc:publisher>
+                <value-of select="../mods:extension/slub:info/slub:corporation[@ref=$pblId]/slub:university"/>
+            </dc:publisher>
+        </if>
     </template>
 
-	<template match="mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes']">
-		<dc:date>
-			<value-of select="substring(. ,1 ,10)" />
-		</dc:date>
-	</template>
-	
-	<template match="mods:originInfo[@eventType='publication']">
-		<dc:date>
-			<value-of select="substring(. ,1 ,10)" />
-		</dc:date>
-	</template>
-	
-	<template match="mods:originInfo[@eventType='submission']">
-		<dc:date>
-			<value-of select="substring(. ,1 ,10)" />
-		</dc:date>
-	</template>
-	
-	<template match="mods:originInfo[@eventType='defence']">
-		<dc:date>
-			<value-of select="substring(. ,1 ,10)" />
-		</dc:date>
-	</template>
-	
-	<template match="slub:funding/slub:project">
-		<dc:relation>
-			<value-of select="." />
-		</dc:relation>
-	</template>
+    <template match="mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes']">
+        <dc:date>
+            <value-of select="substring(. ,1 ,10)"/>
+        </dc:date>
+    </template>
+
+    <template match="mods:originInfo[@eventType='publication']">
+        <dc:date>
+            <value-of select="substring(. ,1 ,10)"/>
+        </dc:date>
+    </template>
+
+    <template match="mods:originInfo[@eventType='submission']">
+        <dc:date>
+            <value-of select="substring(. ,1 ,10)"/>
+        </dc:date>
+    </template>
+
+    <template match="mods:originInfo[@eventType='defence']">
+        <dc:date>
+            <value-of select="substring(. ,1 ,10)"/>
+        </dc:date>
+    </template>
+
+    <template match="slub:funding/slub:project">
+        <dc:relation>
+            <value-of select="."/>
+        </dc:relation>
+    </template>
 
     <!-- eat all unmatched text content -->
     <template match="text()"/>
