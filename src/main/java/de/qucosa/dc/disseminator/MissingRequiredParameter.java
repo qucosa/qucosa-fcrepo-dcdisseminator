@@ -17,9 +17,7 @@
 package de.qucosa.dc.disseminator;
 
 class MissingRequiredParameter extends Exception {
-    /**
-     * 
-     */
+
     private static final long serialVersionUID = 1L;
 
     MissingRequiredParameter(String message) {
