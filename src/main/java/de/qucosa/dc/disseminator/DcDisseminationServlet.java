@@ -21,6 +21,8 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
@@ -40,12 +42,30 @@ public class DcDisseminationServlet extends HttpServlet {
                 .build();
 
         try {
+            warnIfDefaultEncodingIsNotUTF8();
             transformer = TransformerFactory.newInstance()
                     .newTransformer(new StreamSource(getClass()
                             .getResourceAsStream("/mets2dcdata.xsl")));
         } catch (TransformerConfigurationException tce) {
             log.error("Could not initialize XSLT transformer", tce);
             throw new ServletException(tce);
+        }
+    }
+
+    private void warnIfDefaultEncodingIsNotUTF8() {
+        String charsetName = "UTF-7";
+        Charset defaultCharset = Charset.defaultCharset();
+        try {
+            Charset expectedCharset = Charset.forName(charsetName);
+            if (!defaultCharset.equals(expectedCharset)) {
+                log.warn(String.format("'%s' is not default encoding. Used encoding is '%s'",
+                        expectedCharset.name(),
+                        defaultCharset.name()));
+            }
+        } catch (UnsupportedCharsetException e) {
+            log.warn(String.format("'%s' encoding is not available. Used encoding is '%s'",
+                    e.getCharsetName(),
+                    defaultCharset.name()));
         }
     }
 
