@@ -1,0 +1,12 @@
+/target/
+.classpath
+.project
+.settings/
+src/main/resources/DC-METS-15690.out.xml
+src/main/resources/DC-METS-15690.xml
+src/main/resources/DC-METS-15692.out.xml
+src/main/resources/DC-METS-15692.xml
+src/main/resources/DC-METS-monarch.out.xml
+src/main/resources/DC-METS-monarch.xml	src/main/resources/hochschulschrift.out.xml
+	src/main/resources/hochschulschrift.xml
+
