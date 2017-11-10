@@ -241,7 +241,7 @@
 	</template>
 	
 	<template match="mods:relatedItem[@type='series']">
-		<if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z'])">
+		<if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z']) and $documentType='monograph'">
 			<dc:source>
 				<value-of select="mods:titleInfo/mods:title" />
 				<value-of select="if(mods:part[@type='issue']) then concat(' (', mods:part[@type='issue']/mods:detail/mods:number, '), ') else ''" />
@@ -250,8 +250,8 @@
 		</if>
 	</template>
 	
-	<template match="mods:relatedItem[1][@type='host']">
-		<if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z'])">
+	<template match="mods:relatedItem[@type='host']">
+		<if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z']) and $documentType='monograph'">
 			<dc:source>
 				<value-of select="mods:titleInfo/mods:title" />
 				<value-of select="if(mods:part[@type='issue']) then concat(' (', mods:part[@type='issue']/mods:detail/mods:number, '), ') else ''" />
