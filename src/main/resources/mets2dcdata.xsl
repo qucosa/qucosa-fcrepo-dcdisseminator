@@ -220,19 +220,15 @@
 						<value-of select="concat('ISSN: ', mods:identifier[@type='issn'])" />
 					</dc:source>
 				</when>
-				<when test="$documentType = 'in_proceeding'">
+				<!-- Document type `in_book` is to be replaced by `contained_work` in the future. -->
+				<!-- As soon as conferences are supported, `in_proceeding` and `contained_work` need to be different. -->
+				<when test="($documentType = 'in_proceeding') or ($documentType = 'contained_work') or ($documentType = 'in_book')">
 					<dc:source>
-						<value-of select="concat(mods:titleInfo/mods:title, ':', mods:titleInfo/mods:subTitle, ', ')" />
-						<value-of select="concat(mods:originInfo/mods:place/mods:placeTerm, ':' , mods:originInfo/mods:place/mods:publisher, ', ')" />
-						<value-of select="concat('Seiten (', ../mods:part[@type='section']/mods:extent[@unit='pages']/mods:start, '-', ../mods:part[@type='section']/mods:extent[@unit='pages']/mods:end, ') ')" />
-						<value-of select="if(mods:identifier[@type='isbn']) then concat(' ISBN: ', mods:identifier[@type='isbn']) else ''" />
-					</dc:source>
-				</when>
-				<when test="$documentType = 'contained_work'">
-					<dc:source>
-						<value-of select="concat(mods:titleInfo/mods:title, ':', mods:titleInfo/mods:subTitle, ', ')" />
-						<value-of select="concat(mods:originInfo/mods:place/mods:placeTerm, ':' , mods:originInfo/mods:place/mods:publisher, ', ')" />
-						<value-of select="concat('Seiten (', ../mods:part[@type='section']/mods:extent[@unit='pages']/mods:start, '-', ../mods:part[@type='section']/mods:extent[@unit='pages']/mods:end, ') ')" />
+						<value-of select="concat(mods:titleInfo/mods:title, ': ', mods:titleInfo/mods:subTitle, '.')"/>
+						<value-of
+								select="concat(' ', mods:originInfo/mods:place/mods:placeTerm, ': ' , mods:originInfo/mods:publisher)"/>
+						<value-of
+								select="concat(', S. ', ../mods:part[@type='section']/mods:extent[@unit='pages']/mods:start, '-', ../mods:part[@type='section']/mods:extent[@unit='pages']/mods:end, '.')"/>
 						<value-of select="if(mods:identifier[@type='isbn']) then concat(' ISBN: ', mods:identifier[@type='isbn']) else ''" />
 					</dc:source>
 				</when>
