@@ -211,24 +211,25 @@
 	
 	<template match="mods:relatedItem[@type='original']">
 		<if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z'])">
-			<choose>
+            <variable name="startPage" select="../mods:part[@type='section']/mods:extent[@unit='pages']/mods:start"/>
+            <variable name="endPage" select="../mods:part[@type='section']/mods:extent[@unit='pages']/mods:end"/>
+            <variable name="title" select="mods:titleInfo/mods:title"/>
+            <choose>
 				<when test="$documentType = 'article'">
 					<dc:source>
-						<value-of select="concat(mods:titleInfo/mods:title, ' ', mods:part[@type='volume']/mods:detail/mods:number, ' ')" />
-						<value-of select="concat('(', mods:part[@type='issue']/mods:detail/mods:number, '), ')" />
-						<value-of select="concat('S. ', ../mods:part[@type='section']/mods:extent[@unit='pages']/mods:start, '-', ../mods:part[@type='section']/mods:extent[@unit='pages']/mods:end, ', ')" />
-						<value-of select="concat('ISSN: ', mods:identifier[@type='issn'])" />
+						<value-of select="concat($title, ' ', mods:part[@type='volume']/mods:detail/mods:number)" />
+						<value-of select="concat(' (', mods:part[@type='issue']/mods:detail/mods:number, ')')" />
+						<value-of select="concat(', S. ', $startPage, '-', $endPage)" />
+						<value-of select="concat(', ISSN: ', mods:identifier[@type='issn'])" />
 					</dc:source>
 				</when>
 				<!-- Document type `in_book` is to be replaced by `contained_work` in the future. -->
 				<!-- As soon as conferences are supported, `in_proceeding` and `contained_work` need to be different. -->
 				<when test="($documentType = 'in_proceeding') or ($documentType = 'contained_work') or ($documentType = 'in_book')">
 					<dc:source>
-						<value-of select="concat(mods:titleInfo/mods:title, ': ', mods:titleInfo/mods:subTitle, '.')"/>
-						<value-of
-								select="concat(' ', mods:originInfo/mods:place/mods:placeTerm, ': ' , mods:originInfo/mods:publisher)"/>
-						<value-of
-								select="concat(', S. ', ../mods:part[@type='section']/mods:extent[@unit='pages']/mods:start, '-', ../mods:part[@type='section']/mods:extent[@unit='pages']/mods:end, '.')"/>
+						<value-of select="concat($title, ': ', mods:titleInfo/mods:subTitle, '.')"/>
+						<value-of select="concat(' ', mods:originInfo/mods:place/mods:placeTerm, ': ' , mods:originInfo/mods:publisher)"/>
+						<value-of select="concat(', S. ', $startPage, '-', $endPage, '.')"/>
 						<value-of select="if(mods:identifier[@type='isbn']) then concat(' ISBN: ', mods:identifier[@type='isbn']) else ''" />
 					</dc:source>
 				</when>
