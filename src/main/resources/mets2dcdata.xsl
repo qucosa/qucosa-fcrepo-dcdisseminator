@@ -244,7 +244,7 @@
 		<if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z']) and $documentType='monograph'">
 			<dc:source>
 				<value-of select="mods:titleInfo/mods:title" />
-				<value-of select="if(mods:part[@type='volume']) then concat(' (', mods:part[@type='volume']/mods:detail/mods:number, '), ') else ''" />
+				<value-of select="if(mods:part[@type='volume']) then concat(' ; Bd. ', mods:part[@type='volume']/mods:detail/mods:number, '.') else ''" />
 				<value-of select="if(mods:identifier[@type='issn']) then concat(' ISSN: ', mods:identifier[@type='issn']) else ''" />
 			</dc:source>
 		</if>
@@ -254,7 +254,7 @@
 		<if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z']) and $documentType='monograph'">
 			<dc:source>
 				<value-of select="mods:titleInfo/mods:title" />
-				<value-of select="if(mods:part[@type='volume']) then concat(' (', mods:part[@type='volume']/mods:detail/mods:number, '), ') else ''" />
+				<value-of select="if(mods:part[@type='volume']) then concat('. Bd. ', mods:part[@type='volume']/mods:detail/mods:number, '.') else ''" />
 				<value-of select="if(mods:identifier[@type='isbn']) then concat(' ISBN: ', mods:identifier[@type='isbn']) else ''" />
 			</dc:source>
 		</if>
