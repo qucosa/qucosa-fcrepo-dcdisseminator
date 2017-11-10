@@ -220,7 +220,7 @@
 						<value-of select="concat($title, ' ', mods:part[@type='volume']/mods:detail/mods:number)" />
 						<value-of select="concat(' (', mods:part[@type='issue']/mods:detail/mods:number, ')')" />
 						<value-of select="concat(', S. ', $startPage, '-', $endPage)" />
-						<value-of select="concat(', ISSN: ', mods:identifier[@type='issn'])" />
+						<value-of select="if (mods:identifier[@type='issn']) then concat(', ISSN: ', mods:identifier[@type='issn']) else ''" />
 					</dc:source>
 				</when>
 				<!-- Document type `in_book` is to be replaced by `contained_work` in the future. -->
