@@ -1,1 +1,14 @@
 /target/
+.classpath
+.project
+.settings/
+src/main/resources/DC-METS-15690.xml
+src/main/resources/DC-METS-15692.xml
+src/main/resources/DC-METS-monarch.xml
+src/main/resources/hochschulschrift.xml
+src/main/resources/OAI-DC-SOURCE-ARTIKEL.xml
+src/main/resources/OAI-DC-SOURCE-LUDWIG.xml
+src/main/resources/OAI-DC-SOURCE-MEHRBAND.xml
+src/main/resources/OAI-DC-SOURCE-ORTSNAMEN.xml
+src/main/resources/OAI-DC-SOURCE-SCHRIFTREIHE.xml
+

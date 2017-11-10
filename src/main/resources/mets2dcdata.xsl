@@ -15,6 +15,8 @@
     <output standalone="yes" encoding="utf-8" media-type="application/xml" indent="yes" method="xml"/>
     <strip-space elements="*"/>
 
+    <variable name="documentType" select="/mets:mets/mets:structMap[@TYPE='LOGICAL']/mets:div/@TYPE" />
+
     <template match="/mets:mets">
         <oai_dc:dc>
             <apply-templates select="mets:dmdSec[@ID='DMD_000']/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods"/>
@@ -36,7 +38,11 @@
         <apply-templates select="mods:classification"/>
         <apply-templates select="mods:name[@type='personal']"/>
         <apply-templates select="mods:name[@type='corporate']"/>
-        <apply-templates select="mods:originInfo"/>
+        <apply-templates select="mods:originInfo" />
+        <apply-templates select="mods:relatedItem[@type='original']/mods:note[@type='z']" />
+        <apply-templates select="mods:relatedItem[@type='original']" />
+        <apply-templates select="mods:relatedItem[@type='series']" />
+        <apply-templates select="mods:relatedItem[@type='host']" />
     </template>
 
     <template match="slub:info">
@@ -49,8 +55,7 @@
             <value-of select="mods:title"/>
             <variable name="titleInfoLang" select="@lang"/>
             <if test="../mods:titleInfo[@lang=$titleInfoLang]/mods:subTitle">
-                <value-of
-                        select="concat(':', string-join(../mods:titleInfo[@lang=$titleInfoLang][not(@type='alternative')]/mods:subTitle, ':'))"/>
+                <value-of select="concat(':', string-join(../mods:titleInfo[@lang=$titleInfoLang][not(@type='alternative')]/mods:subTitle, ':'))"/>
             </if>
         </dc:title>
     </template>
@@ -109,84 +114,148 @@
     <template match="mods:name[@type='personal']">
         <variable name="familyName" select="mods:namePart[@type='family']"/>
         <variable name="givenName" select="mods:namePart[@type='given']"/>
-        <variable name="code" select="mods:role/mods:roleTerm[@type='code']/text()"/>
-
+        <variable name="code" select="mods:role/mods:roleTerm[@type='code']/text()" />
+        
         <choose>
-            <when test="$code = 'aut' or $code = 'cmp'">
-                <dc:creator>
-                    <value-of select="if($familyName != '') then concat($familyName, ',', $givenName) else $givenName"/>
-                </dc:creator>
-            </when>
-            <when test="$code = 'rev' or $code = 'ctb' or $code = 'ths' or $code = 'sad' or $code = 'pbl'
+       		<when test="$code = 'aut' or $code = 'cmp'">
+       			<dc:creator>
+       				<value-of select="if($familyName != '') then concat($familyName, ',', $givenName) else $givenName" />
+       			</dc:creator>
+       		</when>
+       		<when test="$code = 'rev' or $code = 'ctb' or $code = 'ths' or $code = 'sad' or $code = 'pbl' 
        					or $code = 'ill' or $code = 'edt' or $code = 'oth' or $code = 'trl'">
-                <dc:contributor>
-                    <value-of select="if($familyName != '') then concat($familyName, ',', $givenName) else $givenName"/>
-                </dc:contributor>
-            </when>
+       			<dc:contributor>
+       				<value-of select="if($familyName != '') then concat($familyName, ',', $givenName) else $givenName" />
+       			</dc:contributor>
+       		</when>
         </choose>
     </template>
 
-    <template match="mods:name[@type='corporate' and @displayLabel!='mapping-hack-default-publisher']">
-        <variable name="code" select="mods:role/mods:roleTerm[@type='code']/text()"/>
-
+    <template match="mods:name[@type='corporate' and not(@displayLabel='mapping-hack-default-publisher')]">
+    	<variable name="code" select="mods:role/mods:roleTerm[@type='code']/text()" />
+    	<variable name="corporateID" select="@ID" />
+        
         <choose>
-            <when test="$code = 'dgg'">
-                <dc:contributor>
-                    <value-of select="mods:namePart[1]"/>
-                </dc:contributor>
-            </when>
-            <when test="$code = 'edt' and not(../mods:name[@type='personal']/mods:role/mods:roleTerm[@type='code' and .='edt'])">
-                <dc:contributor>
-                    <value-of select="mods:namePart[1]"/>
-                </dc:contributor>
-            </when>
-            <when test="$code = 'pbl'">
-                <dc:publisher>
-                    <value-of select="mods:namePart[1]"/>
-                </dc:publisher>
-            </when>
+        	<when test="$code = 'dgg'">
+        		<dc:contributor>
+        			<value-of select="mods:namePart[1]"/>
+        		</dc:contributor>
+        	</when>
+        	<when test="$code = 'edt' and not(../mods:name[@type='personal']/mods:role/mods:roleTerm[@type='code' and .='edt'])">
+        		<if test="../mods:extension/slub:info/slub:corporation[@ref=$corporateID]">
+        			<dc:creator>
+        				<value-of select="concat(mods:namePart[1], '.')"/>
+        				<value-of select="../mods:extension/slub:info/slub:corporation[@ref=$corporateID]/slub:*" separator="." />
+        			</dc:creator>
+        		</if>
+        		<if test="not(../mods:extension/slub:info/slub:corporation[@ref=$corporateID])">
+	        		<dc:contributor>
+	        			<value-of select="concat(mods:namePart[1], '.')"/>
+	        			<value-of select="../mods:extension/slub:info/slub:corporation[@ref=$corporateID]/slub:*" separator="." />
+	        		</dc:contributor>
+        		</if>
+        	</when>
+        	<when test="$code = 'pbl'">
+        		<dc:publisher>
+        			<value-of select="mods:namePart[1]" />
+        		</dc:publisher>
+        	</when>
         </choose>
     </template>
-
-    <template match="mods:name[@type='corporate' and @displayLabel='mapping-hack-default-publisher']">
-        <variable name="pblId" select="@ID"/>
-
-        <if test="not(../mods:name[@type='corporate' and mods:role/mods:roleTerm[@type='code']='pbl'])">
-            <dc:publisher>
-                <value-of select="../mods:extension/slub:info/slub:corporation[@ref=$pblId]/slub:university"/>
-            </dc:publisher>
-        </if>
+    
+     <template match="mods:name[@type='corporate' and @displayLabel='mapping-hack-default-publisher']">
+     	<variable name="pblId" select="@ID" />
+     	
+     	<if test="not(../mods:name[@type='corporate' and mods:role/mods:roleTerm[@type='code']='pbl'])">
+       		<dc:publisher>
+       			<value-of select="../mods:extension/slub:info/slub:corporation[@ref=$pblId]/slub:university" />
+       		</dc:publisher>
+       	</if>
     </template>
 
-    <template match="mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes']">
-        <dc:date>
-            <value-of select="substring(. ,1 ,10)"/>
-        </dc:date>
-    </template>
+	<template match="mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes']">
+		<dc:date>
+			<value-of select="substring(. ,1 ,10)" />
+		</dc:date>
+	</template>
+	
+	<template match="mods:originInfo[@eventType='publication']">
+		<dc:date>
+			<value-of select="substring(. ,1 ,10)" />
+		</dc:date>
+	</template>
+	
+	<template match="mods:originInfo[@eventType='submission']">
+		<dc:date>
+			<value-of select="substring(. ,1 ,10)" />
+		</dc:date>
+	</template>
+	
+	<template match="mods:originInfo[@eventType='defence']">
+		<dc:date>
+			<value-of select="substring(. ,1 ,10)" />
+		</dc:date>
+	</template>
+	
+	<template match="slub:funding/slub:project">
+		<dc:relation>
+			<value-of select="." />
+		</dc:relation>
+	</template>
 
-    <template match="mods:originInfo[@eventType='publication']">
-        <dc:date>
-            <value-of select="substring(. ,1 ,10)"/>
-        </dc:date>
-    </template>
-
-    <template match="mods:originInfo[@eventType='submission']">
-        <dc:date>
-            <value-of select="substring(. ,1 ,10)"/>
-        </dc:date>
-    </template>
-
-    <template match="mods:originInfo[@eventType='defence']">
-        <dc:date>
-            <value-of select="substring(. ,1 ,10)"/>
-        </dc:date>
-    </template>
-
-    <template match="slub:funding/slub:project">
-        <dc:relation>
-            <value-of select="."/>
-        </dc:relation>
-    </template>
+	<template match="mods:relatedItem[@type='original']/mods:note[@type='z']">
+		<dc:source>
+			<value-of select="." />
+		</dc:source>
+	</template>
+	
+	<template match="mods:relatedItem[@type='original']">
+		<if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z'])">
+            <variable name="startPage" select="../mods:part[@type='section']/mods:extent[@unit='pages']/mods:start"/>
+            <variable name="endPage" select="../mods:part[@type='section']/mods:extent[@unit='pages']/mods:end"/>
+            <variable name="title" select="mods:titleInfo/mods:title"/>
+            <choose>
+				<when test="$documentType = 'article'">
+					<dc:source>
+						<value-of select="concat($title, ' ', mods:part[@type='volume']/mods:detail/mods:number)" />
+						<value-of select="concat(' (', mods:part[@type='issue']/mods:detail/mods:number, ')')" />
+						<value-of select="concat(', S. ', $startPage, '-', $endPage)" />
+						<value-of select="if (mods:identifier[@type='issn']) then concat('. ISSN: ', mods:identifier[@type='issn']) else ''" />
+					</dc:source>
+				</when>
+				<!-- Document type `in_book` is to be replaced by `contained_work` in the future. -->
+				<!-- As soon as conferences are supported, `in_proceeding` and `contained_work` need to be different. -->
+				<when test="($documentType = 'in_proceeding') or ($documentType = 'contained_work') or ($documentType = 'in_book')">
+					<dc:source>
+						<value-of select="concat($title, ': ', mods:titleInfo/mods:subTitle, '.')"/>
+						<value-of select="concat(' ', mods:originInfo/mods:place/mods:placeTerm, ': ' , mods:originInfo/mods:publisher)"/>
+						<value-of select="concat(', S. ', $startPage, '-', $endPage)"/>
+						<value-of select="if(mods:identifier[@type='isbn']) then concat('. ISBN: ', mods:identifier[@type='isbn']) else ''" />
+					</dc:source>
+				</when>
+			</choose>
+		</if>
+	</template>
+	
+	<template match="mods:relatedItem[@type='series']">
+		<if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z']) and $documentType='monograph'">
+			<dc:source>
+				<value-of select="mods:titleInfo/mods:title" />
+				<value-of select="if(mods:part[@type='volume']) then concat(' ; Bd. ', mods:part[@type='volume']/mods:detail/mods:number) else ''" />
+				<value-of select="if(mods:identifier[@type='issn']) then concat('. ISSN: ', mods:identifier[@type='issn']) else ''" />
+			</dc:source>
+		</if>
+	</template>
+	
+	<template match="mods:relatedItem[@type='host']">
+		<if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z']) and $documentType='monograph'">
+			<dc:source>
+				<value-of select="mods:titleInfo/mods:title" />
+				<value-of select="if(mods:part[@type='volume']) then concat('. Bd. ', mods:part[@type='volume']/mods:detail/mods:number) else ''" />
+				<value-of select="if(mods:identifier[@type='isbn']) then concat('. ISBN: ', mods:identifier[@type='isbn']) else ''" />
+			</dc:source>
+		</if>
+	</template>
 
     <!-- eat all unmatched text content -->
     <template match="text()"/>
