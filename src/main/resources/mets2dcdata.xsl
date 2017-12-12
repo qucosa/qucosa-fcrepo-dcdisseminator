@@ -60,9 +60,27 @@
         </dc:title>
     </template>
 
+    <!-- Document type mapping for OAI:DC -->
     <template match="mets:structMap[@TYPE='LOGICAL']/mets:div[1]">
         <dc:type>
-            <value-of select="@TYPE"/>
+            <choose>
+                <when test="$documentType = 'contained_work'">bookPart</when>
+                <when test="($documentType = 'magister_thesis') or ($documentType = 'diploma_thesis') or ($documentType = 'master_thesis')">masterThesis</when>
+                <when test="$documentType = 'research_paper'">workingPaper</when>
+                <when test="($documentType = 'proceeding') or ($documentType = 'in_proceeding')">conferenceObject</when>
+                <when test="$documentType = 'monograph'">book</when>
+                <when test="$documentType = 'text'">Other</when>
+                <when test="$documentType = 'musical_notation'">MusicalNotation</when>
+                <when test="$documentType = 'paper'">StudyThesis</when>
+                <when test="$documentType = 'issue'">PeriodicalPart</when>
+                <when test="($documentType = 'series') or ($documentType = 'periodical')">Periodical</when>
+                <when test="$documentType = 'multivolume_work'">book</when>
+                <when test="($documentType = 'habilitation_thesis') or ($documentType = 'doctoral_thesis')">doctoralThesis</when>
+                <when test="$documentType = 'bachelor_thesis'">bachelorThesis</when>
+                <otherwise>
+                    <value-of select="@TYPE"/>
+                </otherwise>
+            </choose>
         </dc:type>
     </template>
 
@@ -115,14 +133,14 @@
         <variable name="familyName" select="mods:namePart[@type='family']"/>
         <variable name="givenName" select="mods:namePart[@type='given']"/>
         <variable name="code" select="mods:role/mods:roleTerm[@type='code']/text()" />
-        
+
         <choose>
        		<when test="$code = 'aut' or $code = 'cmp'">
        			<dc:creator>
        				<value-of select="if($familyName != '') then concat($familyName, ',', $givenName) else $givenName" />
        			</dc:creator>
        		</when>
-       		<when test="$code = 'rev' or $code = 'ctb' or $code = 'ths' or $code = 'sad' or $code = 'pbl' 
+       		<when test="$code = 'rev' or $code = 'ctb' or $code = 'ths' or $code = 'sad' or $code = 'pbl'
        					or $code = 'ill' or $code = 'edt' or $code = 'oth' or $code = 'trl'">
        			<dc:contributor>
        				<value-of select="if($familyName != '') then concat($familyName, ',', $givenName) else $givenName" />
@@ -134,7 +152,7 @@
     <template match="mods:name[@type='corporate' and not(@displayLabel='mapping-hack-default-publisher')]">
     	<variable name="code" select="mods:role/mods:roleTerm[@type='code']/text()" />
     	<variable name="corporateID" select="@ID" />
-        
+
         <choose>
         	<when test="$code = 'dgg'">
         		<dc:contributor>
@@ -162,10 +180,10 @@
         	</when>
         </choose>
     </template>
-    
+
      <template match="mods:name[@type='corporate' and @displayLabel='mapping-hack-default-publisher']">
      	<variable name="pblId" select="@ID" />
-     	
+
      	<if test="not(../mods:name[@type='corporate' and mods:role/mods:roleTerm[@type='code']='pbl'])">
        		<dc:publisher>
        			<value-of select="../mods:extension/slub:info/slub:corporation[@ref=$pblId]/slub:university" />
@@ -178,25 +196,25 @@
 			<value-of select="substring(. ,1 ,10)" />
 		</dc:date>
 	</template>
-	
+
 	<template match="mods:originInfo[@eventType='publication']">
 		<dc:date>
 			<value-of select="substring(. ,1 ,10)" />
 		</dc:date>
 	</template>
-	
+
 	<template match="mods:originInfo[@eventType='submission']">
 		<dc:date>
 			<value-of select="substring(. ,1 ,10)" />
 		</dc:date>
 	</template>
-	
+
 	<template match="mods:originInfo[@eventType='defence']">
 		<dc:date>
 			<value-of select="substring(. ,1 ,10)" />
 		</dc:date>
 	</template>
-	
+
 	<template match="slub:funding/slub:project">
 		<dc:relation>
 			<value-of select="." />
@@ -208,7 +226,7 @@
 			<value-of select="." />
 		</dc:source>
 	</template>
-	
+
 	<template match="mods:relatedItem[@type='original']">
 		<if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z'])">
             <variable name="startPage" select="../mods:part[@type='section']/mods:extent[@unit='pages']/mods:start"/>
@@ -236,7 +254,7 @@
 			</choose>
 		</if>
 	</template>
-	
+
 	<template match="mods:relatedItem[@type='series']">
 		<if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z']) and $documentType='monograph'">
 			<dc:source>
@@ -246,7 +264,7 @@
 			</dc:source>
 		</if>
 	</template>
-	
+
 	<template match="mods:relatedItem[@type='host']">
 		<if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z']) and $documentType='monograph'">
 			<dc:source>
