@@ -53,10 +53,9 @@ public class DcDisseminationServlet extends HttpServlet {
     }
 
     private void warnIfDefaultEncodingIsNotUTF8() {
-        String charsetName = "UTF-7";
         Charset defaultCharset = Charset.defaultCharset();
         try {
-            Charset expectedCharset = Charset.forName(charsetName);
+            Charset expectedCharset = Charset.forName("UTF-8");
             if (!defaultCharset.equals(expectedCharset)) {
                 log.warn(String.format("'%s' is not default encoding. Used encoding is '%s'",
                         expectedCharset.name(),
