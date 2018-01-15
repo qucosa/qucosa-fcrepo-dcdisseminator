@@ -16,6 +16,7 @@
     <strip-space elements="*"/>
 
     <variable name="documentType" select="/mets:mets/mets:structMap[@TYPE='LOGICAL']/mets:div/@TYPE" />
+    <variable name="documentStatus" select="//mods:originInfo[@eventType='production']/mods:edition[1]" />
 
     <template match="/mets:mets">
         <oai_dc:dc>
@@ -58,6 +59,20 @@
                 <value-of select="concat(':', string-join(../mods:titleInfo[@lang=$titleInfoLang][not(@type='alternative')]/mods:subTitle, ':'))"/>
             </if>
         </dc:title>
+    </template>
+
+    <!-- Document status/version (Begutachtungsstatus) mapping for OAI:DC -->
+    <template match="mods:originInfo[@eventType='production']/mods:edition[1]">
+        <dc:type>
+            <choose>
+                <when test="$documentStatus = 'draft'">info:eu-repo/semantics/draft</when>
+                <when test="$documentStatus = 'submitted'">info:eu-repo/semantics/submittedVersion</when>
+                <when test="$documentStatus = 'published'">info:eu-repo/semantics/publishedVersion</when>
+                <when test="$documentStatus = 'accepted'">info:eu-repo/semantics/acceptedVersion</when>
+                <when test="$documentStatus = 'updated'">info:eu-repo/semantics/updatedVersion</when>
+                <otherwise>info:eu-repo/semantics/publishedVersion</otherwise>
+            </choose>
+        </dc:type>
     </template>
 
     <!-- Document type mapping for OAI:DC -->
