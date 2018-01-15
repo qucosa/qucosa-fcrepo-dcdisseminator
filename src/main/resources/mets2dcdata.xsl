@@ -70,9 +70,7 @@
                 <when test="$documentStatus = 'published'">info:eu-repo/semantics/publishedVersion</when>
                 <when test="$documentStatus = 'accepted'">info:eu-repo/semantics/acceptedVersion</when>
                 <when test="$documentStatus = 'updated'">info:eu-repo/semantics/updatedVersion</when>
-                <otherwise>
-                    info:eu-repo/semantics/publishedVersion
-                </otherwise>
+                <otherwise>info:eu-repo/semantics/publishedVersion</otherwise>
             </choose>
         </dc:type>
     </template>
