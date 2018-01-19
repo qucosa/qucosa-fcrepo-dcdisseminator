@@ -29,26 +29,43 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
 
 public class DcDisseminationServlet extends HttpServlet {
 
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+
     private static final long serialVersionUID = 1L;
     private static final String REQUEST_PARAM_METS_URL = "metsurl";
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
-    private CloseableHttpClient httpClient;
-    private Transformer transformer;
+
+    private ThreadLocal<CloseableHttpClient> threadLocalHttpClient;
+    private ThreadLocal<Transformer> threadLocalTransformer;
+    private PoolingHttpClientConnectionManager connectionManager;
 
     @Override
     public void init() throws ServletException {
-        httpClient = HttpClientBuilder.create()
-                .setConnectionManager(new PoolingHttpClientConnectionManager())
-                .build();
+        warnIfDefaultEncodingIsNotUTF8();
+
+        connectionManager = new PoolingHttpClientConnectionManager();
+
+        threadLocalHttpClient = new ThreadLocal<CloseableHttpClient>() {
+            @Override
+            protected CloseableHttpClient initialValue() {
+                return HttpClientBuilder.create().setConnectionManager(connectionManager).build();
+            }
+        };
 
         try {
-            warnIfDefaultEncodingIsNotUTF8();
-            transformer = TransformerFactory.newInstance()
-                    .newTransformer(new StreamSource(getClass()
-                            .getResourceAsStream("/mets2dcdata.xsl")));
-        } catch (TransformerConfigurationException tce) {
-            log.error("Could not initialize XSLT transformer", tce);
-            throw new ServletException(tce);
+            threadLocalTransformer = new ThreadLocal<Transformer>() {
+                @Override
+                protected Transformer initialValue() {
+                    try {
+                        StreamSource source = new StreamSource(getClass().getResourceAsStream("/mets2dcdata.xsl"));
+                        return TransformerFactory.newInstance().newTransformer(source);
+                    } catch (TransformerConfigurationException e) {
+                        log.error("Could not initialize XSLT transformer", e);
+                        throw new RuntimeException(e);
+                    }
+                }
+            };
+        } catch (Exception e) {
+            throw new ServletException(e);
         }
     }
 
@@ -71,21 +88,22 @@ public class DcDisseminationServlet extends HttpServlet {
     @Override
     public void destroy() {
         try {
-            httpClient.close();
+            threadLocalHttpClient.get().close();
         } catch (IOException e) {
             log.warn("Problem closing HTTP client: " + e.getMessage());
         }
     }
+
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             URI metsDocumentUri = URI.create(getRequiredRequestParameterValue(request, REQUEST_PARAM_METS_URL));
 
-            try (CloseableHttpResponse resp = httpClient.execute(new HttpGet(metsDocumentUri))) {
+            try (CloseableHttpResponse resp = threadLocalHttpClient.get().execute(new HttpGet(metsDocumentUri))) {
 
                 if (SC_OK == resp.getStatusLine().getStatusCode()) {
-                    transformer.transform(
+                    threadLocalTransformer.get().transform(
                             new StreamSource(resp.getEntity().getContent()),
                             new StreamResult(response.getOutputStream())
                     );
