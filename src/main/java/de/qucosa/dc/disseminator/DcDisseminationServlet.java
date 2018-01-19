@@ -19,6 +19,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -103,11 +104,16 @@ public class DcDisseminationServlet extends HttpServlet {
             try (CloseableHttpResponse resp = threadLocalHttpClient.get().execute(new HttpGet(metsDocumentUri))) {
 
                 if (SC_OK == resp.getStatusLine().getStatusCode()) {
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
                     threadLocalTransformer.get().transform(
                             new StreamSource(resp.getEntity().getContent()),
-                            new StreamResult(response.getOutputStream())
+                            new StreamResult(byteArrayOutputStream)
                     );
+
                     response.setStatus(SC_OK);
+                    response.setContentType("application/xml");
+                    byteArrayOutputStream.writeTo(response.getOutputStream());
                 }
 
             } catch (TransformerException e) {
