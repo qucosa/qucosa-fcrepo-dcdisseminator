@@ -1,20 +1,24 @@
 package de.qucosa.dc.disseminator;
 
+import org.apache.commons.pool2.BasePooledObjectFactory;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
@@ -35,39 +39,45 @@ public class DcDisseminationServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final String REQUEST_PARAM_METS_URL = "metsurl";
 
-    private ThreadLocal<CloseableHttpClient> threadLocalHttpClient;
-    private ThreadLocal<Transformer> threadLocalTransformer;
-    private PoolingHttpClientConnectionManager connectionManager;
+    private ObjectPool<CloseableHttpClient> httpClientPool;
+    private ObjectPool<Transformer> transformerPool;
 
     @Override
-    public void init() throws ServletException {
+    public void init() {
         warnIfDefaultEncodingIsNotUTF8();
 
-        connectionManager = new PoolingHttpClientConnectionManager();
+        final HttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
 
-        threadLocalHttpClient = new ThreadLocal<CloseableHttpClient>() {
+        httpClientPool = new GenericObjectPool<>(new BasePooledObjectFactory<CloseableHttpClient>() {
             @Override
-            protected CloseableHttpClient initialValue() {
+            public CloseableHttpClient create() {
                 return HttpClientBuilder.create().setConnectionManager(connectionManager).build();
             }
-        };
 
-        try {
-            threadLocalTransformer = new ThreadLocal<Transformer>() {
-                @Override
-                protected Transformer initialValue() {
-                    try {
-                        StreamSource source = new StreamSource(getClass().getResourceAsStream("/mets2dcdata.xsl"));
-                        return TransformerFactory.newInstance().newTransformer(source);
-                    } catch (TransformerConfigurationException e) {
-                        log.error("Could not initialize XSLT transformer", e);
-                        throw new RuntimeException(e);
-                    }
-                }
-            };
-        } catch (Exception e) {
-            throw new ServletException(e);
-        }
+            @Override
+            public PooledObject<CloseableHttpClient> wrap(CloseableHttpClient closeableHttpClient) {
+                return new DefaultPooledObject<>(closeableHttpClient);
+            }
+
+            @Override
+            public void destroyObject(PooledObject<CloseableHttpClient> p) throws Exception {
+                p.getObject().close();
+                super.destroyObject(p);
+            }
+        });
+
+        transformerPool = new GenericObjectPool<>(new BasePooledObjectFactory<Transformer>() {
+            @Override
+            public Transformer create() throws Exception {
+                StreamSource source = new StreamSource(getClass().getResourceAsStream("/mets2dcdata.xsl"));
+                return TransformerFactory.newInstance().newTransformer(source);
+            }
+
+            @Override
+            public PooledObject<Transformer> wrap(Transformer transformer) {
+                return new DefaultPooledObject<>(transformer);
+            }
+        });
     }
 
     private void warnIfDefaultEncodingIsNotUTF8() {
@@ -89,9 +99,14 @@ public class DcDisseminationServlet extends HttpServlet {
     @Override
     public void destroy() {
         try {
-            threadLocalHttpClient.get().close();
-        } catch (IOException e) {
-            log.warn("Problem closing HTTP client: " + e.getMessage());
+            httpClientPool.clear();
+        } catch (Exception e) {
+            log.warn("Problem clearing HTTP client pool: " + e.getMessage());
+        }
+        try {
+            transformerPool.clear();
+        } catch (Exception e) {
+            log.warn("Problem clearing XML transformer pool: " + e.getMessage());
         }
     }
 
@@ -101,15 +116,19 @@ public class DcDisseminationServlet extends HttpServlet {
         try {
             URI metsDocumentUri = URI.create(getRequiredRequestParameterValue(request, REQUEST_PARAM_METS_URL));
 
-            try (CloseableHttpResponse resp = threadLocalHttpClient.get().execute(new HttpGet(metsDocumentUri))) {
+            CloseableHttpClient httpClient = httpClientPool.borrowObject();
+
+            try (CloseableHttpResponse resp = httpClient.execute(new HttpGet(metsDocumentUri))) {
 
                 if (SC_OK == resp.getStatusLine().getStatusCode()) {
                     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-                    threadLocalTransformer.get().transform(
+                    Transformer transformer = transformerPool.borrowObject();
+                    transformer.transform(
                             new StreamSource(resp.getEntity().getContent()),
                             new StreamResult(byteArrayOutputStream)
                     );
+                    transformerPool.returnObject(transformer);
 
                     response.setStatus(SC_OK);
                     response.setContentType("application/xml");
@@ -121,10 +140,13 @@ public class DcDisseminationServlet extends HttpServlet {
                 sendError(response, SC_INTERNAL_SERVER_ERROR, e.getMessage());
             }
 
+            httpClientPool.returnObject(httpClient);
+
         } catch (Throwable anythingElse) {
             log.warn("Internal server error", anythingElse);
             sendError(response, SC_INTERNAL_SERVER_ERROR, anythingElse.getMessage());
         }
+
     }
 
     private void sendError(HttpServletResponse resp, int status, String msg) throws IOException {
