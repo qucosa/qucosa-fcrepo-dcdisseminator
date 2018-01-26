@@ -7,7 +7,6 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -39,32 +38,16 @@ public class DcDisseminationServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final String REQUEST_PARAM_METS_URL = "metsurl";
 
-    private ObjectPool<CloseableHttpClient> httpClientPool;
+    private CloseableHttpClient httpClient;
     private ObjectPool<Transformer> transformerPool;
 
     @Override
     public void init() {
         warnIfDefaultEncodingIsNotUTF8();
 
-        final HttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-
-        httpClientPool = new GenericObjectPool<>(new BasePooledObjectFactory<CloseableHttpClient>() {
-            @Override
-            public CloseableHttpClient create() {
-                return HttpClientBuilder.create().setConnectionManager(connectionManager).build();
-            }
-
-            @Override
-            public PooledObject<CloseableHttpClient> wrap(CloseableHttpClient closeableHttpClient) {
-                return new DefaultPooledObject<>(closeableHttpClient);
-            }
-
-            @Override
-            public void destroyObject(PooledObject<CloseableHttpClient> p) throws Exception {
-                p.getObject().close();
-                super.destroyObject(p);
-            }
-        });
+        httpClient = HttpClientBuilder.create()
+                .setConnectionManager(new PoolingHttpClientConnectionManager())
+                .build();
 
         transformerPool = new GenericObjectPool<>(new BasePooledObjectFactory<Transformer>() {
             @Override
@@ -99,7 +82,7 @@ public class DcDisseminationServlet extends HttpServlet {
     @Override
     public void destroy() {
         try {
-            httpClientPool.clear();
+            httpClient.close();
         } catch (Exception e) {
             log.warn("Problem clearing HTTP client pool: " + e.getMessage());
         }
@@ -115,8 +98,6 @@ public class DcDisseminationServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             URI metsDocumentUri = URI.create(getRequiredRequestParameterValue(request, REQUEST_PARAM_METS_URL));
-
-            CloseableHttpClient httpClient = httpClientPool.borrowObject();
 
             try (CloseableHttpResponse resp = httpClient.execute(new HttpGet(metsDocumentUri))) {
 
@@ -139,8 +120,6 @@ public class DcDisseminationServlet extends HttpServlet {
                 log.error("Error transforming METS/MODS: " + e.getMessage());
                 sendError(response, SC_INTERNAL_SERVER_ERROR, e.getMessage());
             }
-
-            httpClientPool.returnObject(httpClient);
 
         } catch (Throwable anythingElse) {
             log.warn("Internal server error", anythingElse);
