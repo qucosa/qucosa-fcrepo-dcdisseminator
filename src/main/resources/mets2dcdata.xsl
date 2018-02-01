@@ -5,6 +5,8 @@
             xmlns:slub="http://slub-dresden.de/"
             xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:myfunc="urn:de:qucosa:dc"
+            xmlns:xs="http://www.w3.org/2001/XMLSchema"
             version="2.0"
             xmlns="http://www.w3.org/1999/XSL/Transform"
             xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd
@@ -127,21 +129,21 @@
     </template>
 
     <template match="mods:classification[@authority='ddc']">
-        <dc:classification>
+        <dc:subject>
             <value-of select="concat('info:eu-repo/classification/ddc/', .)"/>
-        </dc:classification>
+        </dc:subject>
     </template>
 
     <template match="mods:classification[@authority='z']">
-        <dc:classification>
+        <dc:subject>
             <value-of select="."/>
-        </dc:classification>
+        </dc:subject>
     </template>
 
     <template match="mods:classification[@authority='sswd']">
-        <dc:classification>
+        <dc:subject>
             <value-of select="replace(., ',', ';')"/>
-        </dc:classification>
+        </dc:subject>
     </template>
 
     <template match="mods:name[@type='personal']">
@@ -206,29 +208,49 @@
        	</if>
     </template>
 
+    <!-- Distribution - Datum der Veröffentlichung im Repository -->
 	<template match="mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes']">
 		<dc:date>
-			<value-of select="substring(. ,1 ,10)" />
+            <value-of select="myfunc:formatDateTime(.)"/>
 		</dc:date>
 	</template>
 
-	<template match="mods:originInfo[@eventType='publication']">
+    <template match="mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes' and (not(text()) or (normalize-space(.)=''))]">
+        <comment>dc:date could not be created, missing value in mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes']</comment>
+    </template>
+
+    <!-- Jahr der Erstveröffentlichung -->
+	<template match="mods:originInfo[@eventType='publication']/mods:dateIssued">
 		<dc:date>
-			<value-of select="substring(. ,1 ,10)" />
+            <value-of select="myfunc:formatDateTime(.)"/>
 		</dc:date>
 	</template>
 
-	<template match="mods:originInfo[@eventType='submission']">
+    <template match="mods:originInfo[@eventType='publication']/mods:dateIssued[not(text() or normalize-space(.)='')]">
+        <comment>dc:date could not be created, missing value in mods:originInfo[@eventType='publication']/mods:dateIssued</comment>
+    </template>
+
+    <!--Datum der Einreichung-->
+	<template match="mods:originInfo[@eventType='publication']/mods:dateOther[@type='submission']">
 		<dc:date>
-			<value-of select="substring(. ,1 ,10)" />
+            <value-of select="myfunc:formatDateTime(.)"/>
 		</dc:date>
 	</template>
 
-	<template match="mods:originInfo[@eventType='defence']">
+    <template match="mods:originInfo[@eventType='publication']/mods:dateOther[@type='submission' and (not(text()) or (normalize-space(.)=''))]">
+        <comment>dc:date could not be created, missing value in mods:originInfo[@eventType='publication']/mods:dateOther[@type='submission']</comment>
+    </template>
+
+    <!--Datum der Verteidigung-->
+    <template match="mods:originInfo[@eventType='publication']/mods:dateOther[@type='defense']">
 		<dc:date>
-			<value-of select="substring(. ,1 ,10)" />
+            <value-of select="myfunc:formatDateTime(.)"/>
 		</dc:date>
 	</template>
+
+    <template match="mods:originInfo[@eventType='publication']/mods:dateOther[@type='defense' and (not(text()) or (normalize-space(.)=''))]">
+        <comment>dc:date could not be created, missing value in mods:originInfo[@eventType='publication']/mods:dateOther[@type='defense']</comment>
+    </template>
 
 	<template match="slub:funding/slub:project">
 		<dc:relation>
@@ -292,5 +314,37 @@
 
     <!-- eat all unmatched text content -->
     <template match="text()"/>
+
+    <!-- Helper functions and templates -->
+
+    <function name="myfunc:formatDateTime" as="xs:string">
+        <param name="value" as="xs:string"/>
+        <choose>
+            <when test="string-length($value)=4">
+                <value-of select="$value"/>
+            </when>
+            <when test="contains($value, 'T')">
+                <value-of select="format-dateTime(xs:dateTime(myfunc:formatTimezoneHour($value)), '[Y0001]-[M01]-[D01]')"/>
+            </when>
+            <otherwise>
+                <value-of select="format-date(xs:date($value), '[Y0001]-[M01]-[D01]')"/>
+                <!--<value-of select="." />-->
+            </otherwise>
+        </choose>
+    </function>
+
+    <function name="myfunc:formatTimezoneHour" as="xs:string">
+        <param name="value" as="xs:string"/>
+        <choose>
+            <when test="matches($value, '[+|-]\d{4}$')">
+                <variable name="a" select="substring($value, 1, string-length($value)-2)"/>
+                <variable name="b" select="substring($value, string-length($value)-1)"/>
+                <value-of select="concat($a, ':', $b)"/>
+            </when>
+            <otherwise>
+                <value-of select="$value"/>
+            </otherwise>
+        </choose>
+    </function>
 
 </stylesheet>
