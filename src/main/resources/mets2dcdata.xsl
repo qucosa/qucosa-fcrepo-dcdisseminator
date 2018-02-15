@@ -150,7 +150,7 @@
         <variable name="code" select="mods:role/mods:roleTerm[@type='code']/text()" />
 
         <choose>
-       		<when test="$code = 'aut' or $code = 'cmp'">
+       		<when test="$code = 'aut' or $code = 'cmp' or $code = 'art'">
        			<dc:creator>
        				<value-of select="if($familyName != '') then concat($familyName, ',', $givenName) else $givenName" />
        			</dc:creator>
