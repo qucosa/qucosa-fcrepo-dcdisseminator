@@ -49,6 +49,7 @@
     <template match="slub:info">
         <apply-templates select="slub:documentType"/>
         <apply-templates select="slub:funding/slub:project"/>
+        <apply-templates select="slub:collections"/>
     </template>
 
     <template match="mods:titleInfo">
@@ -235,6 +236,14 @@
 			<value-of select="." />
 		</dc:relation>
 	</template>
+
+    <template match="slub:info[slub:collections/slub:collection='nonOA']">
+        <dc:rights>info:eu-repo/semantics/restrictedAccess</dc:rights>
+    </template>
+
+    <template match="slub:info[not(slub:collections/slub:collection = 'nonOA')]">
+        <dc:rights>info:eu-repo/semantics/openAccess</dc:rights>
+    </template>
 
 	<template match="mods:relatedItem[@type='original']/mods:note[@type='z']">
 		<dc:source>
