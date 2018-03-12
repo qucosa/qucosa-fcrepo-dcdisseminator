@@ -50,8 +50,7 @@
 
     <template match="slub:info">
         <apply-templates select="slub:documentType"/>
-        <apply-templates select="slub:funding/slub:project"/>
-        <apply-templates select="slub:collections"/>
+        <apply-templates select="." mode="dc:relation"/>
     </template>
 
     <template match="mods:titleInfo">
@@ -253,11 +252,16 @@
         <comment>dc:date could not be created, missing value in mods:originInfo[@eventType='publication']/mods:dateOther[@type='defense']</comment>
     </template>
 
-	<template match="slub:funding/slub:project">
-		<dc:relation>
-			<value-of select="." />
-		</dc:relation>
-	</template>
+    <template match="slub:info" mode="dc:relation">
+        <variable name="Funder" select="./slub:juristiction"/>
+        <variable name="FundingProgram" select="./slub:funding"/>
+        <variable name="ProjectID" select="./slub:project/@uid"/>
+        <if test="$Funder != '' and $FundingProgram != '' and $ProjectID != ''">
+            <dc:relation>
+                info:eu-repo/grantAgreement/<value-of select="$Funder"/>/<value-of select="$FundingProgram"/>/<value-of select="$ProjectID"/>
+            </dc:relation>
+        </if>
+    </template>
 
     <template match="slub:info[slub:collections/slub:collection='nonOA']">
         <dc:rights>info:eu-repo/semantics/restrictedAccess</dc:rights>
