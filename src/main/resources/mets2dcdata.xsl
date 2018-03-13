@@ -210,46 +210,58 @@
 
     <!-- Distribution - Datum der Veröffentlichung im Repository -->
 	<template match="mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes']">
-		<dc:date>
-            <value-of select="myfunc:formatDateTime(.)"/>
-		</dc:date>
+        <choose>
+            <when test="string-length(normalize-space(.)) = 0">
+                <comment>dc:date could not be created, missing value in mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes']</comment>
+            </when>
+            <otherwise>
+                <dc:date>
+                    <value-of select="myfunc:formatDateTime(.)"/>
+                </dc:date>
+            </otherwise>
+        </choose>
 	</template>
-
-    <template match="mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes' and (not(text()) or (normalize-space(.)=''))]">
-        <comment>dc:date could not be created, missing value in mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes']</comment>
-    </template>
 
     <!-- Jahr der Erstveröffentlichung -->
 	<template match="mods:originInfo[@eventType='publication']/mods:dateIssued">
-		<dc:date>
-            <value-of select="myfunc:formatDateTime(.)"/>
-		</dc:date>
-	</template>
-
-    <template match="mods:originInfo[@eventType='publication']/mods:dateIssued[not(text() or normalize-space(.)='')]">
-        <comment>dc:date could not be created, missing value in mods:originInfo[@eventType='publication']/mods:dateIssued</comment>
+        <choose>
+            <when test="string-length(normalize-space(.)) = 0">
+                <comment>dc:date could not be created, missing value in mods:originInfo[@eventType='publication']/mods:dateIssued</comment>
+            </when>
+            <otherwise>
+                <dc:date>
+                    <value-of select="myfunc:formatDateTime(.)"/>
+                </dc:date>
+            </otherwise>
+        </choose>
     </template>
 
     <!--Datum der Einreichung-->
 	<template match="mods:originInfo[@eventType='publication']/mods:dateOther[@type='submission']">
-		<dc:date>
-            <value-of select="myfunc:formatDateTime(.)"/>
-		</dc:date>
-	</template>
-
-    <template match="mods:originInfo[@eventType='publication']/mods:dateOther[@type='submission' and (not(text()) or (normalize-space(.)=''))]">
-        <comment>dc:date could not be created, missing value in mods:originInfo[@eventType='publication']/mods:dateOther[@type='submission']</comment>
+        <choose>
+            <when test="string-length(normalize-space(.)) = 0">
+                <comment>dc:date could not be created, missing value in mods:originInfo[@eventType='publication']/mods:dateOther[@type='submission']</comment>
+            </when>
+            <otherwise>
+                <dc:date>
+                    <value-of select="myfunc:formatDateTime(.)"/>
+                </dc:date>
+            </otherwise>
+        </choose>
     </template>
 
     <!--Datum der Verteidigung-->
     <template match="mods:originInfo[@eventType='publication']/mods:dateOther[@type='defense']">
-		<dc:date>
-            <value-of select="myfunc:formatDateTime(.)"/>
-		</dc:date>
-	</template>
-
-    <template match="mods:originInfo[@eventType='publication']/mods:dateOther[@type='defense' and (not(text()) or (normalize-space(.)=''))]">
-        <comment>dc:date could not be created, missing value in mods:originInfo[@eventType='publication']/mods:dateOther[@type='defense']</comment>
+        <choose>
+            <when test="string-length(normalize-space(.)) = 0">
+                <comment>dc:date could not be created, missing value in mods:originInfo[@eventType='publication']/mods:dateOther[@type='defense']</comment>
+            </when>
+            <otherwise>
+                <dc:date>
+                    <value-of select="myfunc:formatDateTime(.)"/>
+                </dc:date>
+            </otherwise>
+        </choose>
     </template>
 
     <template match="slub:info" mode="dc:relation">
