@@ -1,3 +1,12 @@
+<!-- ~ Copyright 2018 Saxon State and University Library Dresden (SLUB) ~ 
+  ~ Licensed under the Apache License, Version 2.0 (the "License"); ~ you may 
+  not use this file except in compliance with the License. ~ You may obtain 
+  a copy of the License at ~ ~ http://www.apache.org/licenses/LICENSE-2.0 ~ 
+  ~ Unless required by applicable law or agreed to in writing, software ~ distributed 
+  under the License is distributed on an "AS IS" BASIS, ~ WITHOUT WARRANTIES 
+  OR CONDITIONS OF ANY KIND, either express or implied. ~ See the License for 
+  the specific language governing permissions and ~ limitations under the License. -->
+
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -34,10 +43,26 @@
       <scope>test</scope>
     </dependency>
 
+
+    <!-- XSLT 2.0 support -->
     <dependency>
       <groupId>net.sf.saxon</groupId>
       <artifactId>Saxon-HE</artifactId>
       <version>9.8.0-4</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.xmlunit</groupId>
+      <artifactId>xmlunit-core</artifactId>
+      <version>2.5.1</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.xmlunit</groupId>
+      <artifactId>xmlunit-matchers</artifactId>
+      <version>2.5.1</version>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>
@@ -51,8 +76,8 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.3</version>
           <configuration>
-            <source>1.8</source>
-            <target>1.8</target>
+            <source>1.7</source>
+            <target>1.7</target>
           </configuration>
         </plugin>
       </plugins>
