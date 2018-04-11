@@ -20,6 +20,24 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 		  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 
+    <!--
+        If `true` the objects PID gets URL encoded when constructing the transfer URL.
+    -->
+    <context-param>
+        <param-name>transfer.url.pidencode</param-name>
+        <param-value>true</param-value>
+    </context-param>
+
+    <!--
+        Context parameter defining whether the value of ##AGENT## should be mapped to something else
+        in the process of forming the transfer URL.
+    -->
+    <context-param>
+        <param-name>agent.substitutions</param-name>
+        <param-value>ubc=monarch ; ubl=ul</param-value>
+    </context-param>
+
+
     <servlet>
         <servlet-name>DcDisseminationServlet</servlet-name>
         <servlet-class>de.qucosa.dc.disseminator.DcDisseminationServlet</servlet-class>

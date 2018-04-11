@@ -20,11 +20,16 @@
     <variable name="documentType" select="/mets:mets/mets:structMap[@TYPE='LOGICAL']/mets:div/@TYPE" />
     <variable name="documentStatus" select="//mods:originInfo[@eventType='production']/mods:edition[1]" />
 
+    <!-- URL parameter for substitutions (dc:identifier): frontpage-URL and transfer-URLs, passed from dissemination servlet -->
+    <param name="qpid"/>
+    <param name="agent"/>
+
     <template match="/mets:mets">
         <oai_dc:dc>
             <apply-templates select="mets:dmdSec[@ID='DMD_000']/mets:mdWrap[@MDTYPE='MODS']/mets:xmlData/mods:mods"/>
             <apply-templates select="mets:amdSec/mets:techMD/mets:mdWrap/mets:xmlData/slub:info"/>
             <apply-templates select="mets:structMap/mets:div"/>
+            <apply-templates select="mets:fileSec"/>
         </oai_dc:dc>
     </template>
 
@@ -99,12 +104,29 @@
                 </otherwise>
             </choose>
         </dc:type>
+
+        <if test="$agent and $qpid">
+            <dc:identifier>
+                <value-of select="replace(replace('http://##AGENT##.qucosa.de/id/##PID##', '##AGENT##', $agent), '##PID##', $qpid)" />
+            </dc:identifier>
+        </if>
     </template>
+
 
     <template match="mods:identifier">
         <dc:identifier>
             <value-of select="."/>
         </dc:identifier>
+    </template>
+
+    <template match="mets:fileSec">
+        <for-each select="mets:fileGrp[@USE='DOWNLOAD']/*">
+            <if test="$agent and $qpid">
+                <dc:identifier>
+                    <value-of select="replace(replace(replace('http://##AGENT##.qucosa.de/api/##PID##/attachment/##ATT##', '##AGENT##', $agent), '##PID##', $qpid), '##ATT##', ./@ID)" />
+                </dc:identifier>
+            </if>
+        </for-each>
     </template>
 
     <template match="mods:language/mods:languageTerm[matches(@authority, '^iso639-[1|2]')]">
