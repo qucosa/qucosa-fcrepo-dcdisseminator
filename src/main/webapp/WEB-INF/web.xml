@@ -32,11 +32,12 @@
         Context parameter defining whether the value of ##AGENT## should be mapped to something else
         in the process of forming the transfer URL.
     -->
+<!--
     <context-param>
         <param-name>agent.substitutions</param-name>
         <param-value>ubc=monarch ; ubl=ul</param-value>
     </context-param>
-
+-->
 
     <servlet>
         <servlet-name>DcDisseminationServlet</servlet-name>
