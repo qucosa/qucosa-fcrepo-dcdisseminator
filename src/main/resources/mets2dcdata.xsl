@@ -63,7 +63,7 @@
             <value-of select="mods:title"/>
             <variable name="titleInfoLang" select="@lang"/>
             <if test="../mods:titleInfo[@lang=$titleInfoLang]/mods:subTitle">
-                <value-of select="concat(':', string-join(../mods:titleInfo[@lang=$titleInfoLang][not(@type='alternative')]/mods:subTitle, ':'))"/>
+                <value-of select="concat(': ', string-join(../mods:titleInfo[@lang=$titleInfoLang][not(@type='alternative')]/mods:subTitle, ': '))"/>
             </if>
         </dc:title>
     </template>
@@ -84,26 +84,87 @@
 
     <!-- Document type mapping for OAI:DC -->
     <template match="mets:structMap[@TYPE='LOGICAL']/mets:div[1]">
-        <dc:type>
-            <choose>
-                <when test="$documentType = 'contained_work'">bookPart</when>
-                <when test="($documentType = 'magister_thesis') or ($documentType = 'diploma_thesis') or ($documentType = 'master_thesis')">masterThesis</when>
-                <when test="$documentType = 'research_paper'">workingPaper</when>
-                <when test="($documentType = 'proceeding') or ($documentType = 'in_proceeding')">conferenceObject</when>
-                <when test="$documentType = 'monograph'">book</when>
-                <when test="$documentType = 'text'">Other</when>
-                <when test="$documentType = 'musical_notation'">MusicalNotation</when>
-                <when test="$documentType = 'paper'">StudyThesis</when>
-                <when test="$documentType = 'issue'">PeriodicalPart</when>
-                <when test="($documentType = 'series') or ($documentType = 'periodical')">Periodical</when>
-                <when test="$documentType = 'multivolume_work'">book</when>
-                <when test="($documentType = 'habilitation_thesis') or ($documentType = 'doctoral_thesis')">doctoralThesis</when>
-                <when test="$documentType = 'bachelor_thesis'">bachelorThesis</when>
-                <otherwise>
-                    <value-of select="@TYPE"/>
-                </otherwise>
-            </choose>
-        </dc:type>
+        <!-- 1st dc:type: DINI publication and document type mapping -->
+        <!-- 2nd dc:type: DRIVER vocabulary (openAire-Compliance) -->
+        <!-- 3rd dc:type: DCMI type vocabulary, for DINI -->
+        <choose>
+            <when test="$documentType = 'contained_work'">
+                <dc:type>doc-type:bookPart</dc:type>
+                <dc:type>info:eu-repo/semantics/bookPart</dc:type>
+                <dc:type>doc-type:Text</dc:type>
+            </when>
+            <when test="($documentType = 'magister_thesis') or ($documentType = 'diploma_thesis') or ($documentType = 'master_thesis')">
+                <dc:type>doc-type:masterThesis</dc:type>
+                <dc:type>info:eu-repo/semantics/masterThesis</dc:type>
+                <dc:type>doc-type:Text</dc:type>
+            </when>
+            <when test="$documentType = 'research_paper'">
+                <dc:type>doc-type:workingPaper</dc:type>
+                <dc:type>info:eu-repo/semantics/workingPaper</dc:type>
+                <dc:type>doc-type:Text</dc:type>
+            </when>
+            <when test="$documentType = 'proceeding'">
+                <dc:type>doc-type:conferenceObject</dc:type>
+                <dc:type>info:eu-repo/semantics/conferenceObject</dc:type>
+                <dc:type>doc-type:Collection</dc:type>
+            </when>
+            <when test="$documentType = 'in_proceeding'">
+                <dc:type>doc-type:conferenceObject</dc:type>
+                <dc:type>info:eu-repo/semantics/conferenceObject</dc:type>
+                <dc:type>doc-type:Text</dc:type>
+            </when>
+            <when test="$documentType = 'monograph'">
+                <dc:type>doc-type:book</dc:type>
+                <dc:type>info:eu-repo/semantics/book</dc:type>
+                <dc:type>doc-type:Text</dc:type>
+            </when>
+            <when test="$documentType = 'text'">
+                <dc:type>doc-type:Other</dc:type>
+                <dc:type>info:eu-repo/semantics/other</dc:type>
+                <dc:type>doc-type:Text</dc:type>
+            </when>
+            <when test="$documentType = 'musical_notation'">
+                <dc:type>doc-type:MusicalNotation</dc:type>
+                <dc:type>info:eu-repo/semantics/other</dc:type>
+                <dc:type>doc-type:Image</dc:type>
+            </when>
+            <when test="$documentType = 'paper'">
+                <dc:type>doc-type:StudyThesis</dc:type>
+                <dc:type>info:eu-repo/semantics/StudyThesis</dc:type>
+                <dc:type>doc-type:Text</dc:type>
+            </when>
+            <when test="$documentType = 'issue'">
+                <dc:type>doc-type:PeriodicalPart</dc:type>
+                <dc:type>info:eu-repo/semantics/PeriodicalPart</dc:type>
+                <dc:type>doc-type:Text</dc:type>
+            </when>
+            <when test="($documentType = 'series') or ($documentType = 'periodical')">
+                <dc:type>doc-type:Periodical</dc:type>
+                <dc:type>info:eu-repo/semantics/Periodical</dc:type>
+                <dc:type>doc-type:Collection</dc:type>
+            </when>
+            <when test="$documentType = 'multivolume_work'">
+                <dc:type>doc-type:book</dc:type>
+                <dc:type>info:eu-repo/semantics/book</dc:type>
+                <dc:type>doc-type:Text</dc:type>
+            </when>
+            <when test="($documentType = 'habilitation_thesis') or ($documentType = 'doctoral_thesis')">
+                <dc:type>doc-type:doctoralThesis</dc:type>
+                <dc:type>info:eu-repo/semantics/doctoralThesis</dc:type>
+                <dc:type>doc-type:Text</dc:type>
+            </when>
+            <when test="$documentType = 'bachelor_thesis'">
+                <dc:type>doc-type:bachelorThesis</dc:type>
+                <dc:type>info:eu-repo/semantics/bachelorThesis</dc:type>
+                <dc:type>doc-type:Text</dc:type>
+            </when>
+
+            <otherwise>
+                <dc:type><value-of select="concat('doc-type:', @TYPE)"/></dc:type>
+                <dc:type><value-of select="concat('info:eu-repo/semantics/', @TYPE)"/></dc:type>
+                <dc:type>doc-type:Text</dc:type>
+            </otherwise>
+        </choose>
 
         <if test="$agent and $qpid">
             <dc:identifier>
@@ -154,6 +215,9 @@
         <dc:subject>
             <value-of select="concat('info:eu-repo/classification/ddc/', .)"/>
         </dc:subject>
+        <dc:subject>
+            <value-of select="concat('ddc:', .)"/>
+        </dc:subject>
     </template>
 
     <template match="mods:classification[@authority='z']">
@@ -173,18 +237,34 @@
         <variable name="givenName" select="mods:namePart[@type='given']"/>
         <variable name="code" select="mods:role/mods:roleTerm[@type='code']/text()" />
 
+        <!-- if there's no aut/cmp/art as creator then the publishing person should be creator -->
         <choose>
-       		<when test="$code = 'aut' or $code = 'cmp' or $code = 'art'">
-       			<dc:creator>
-       				<value-of select="if($familyName != '') then concat($familyName, ',', $givenName) else $givenName" />
-       			</dc:creator>
-       		</when>
-       		<when test="$code = 'rev' or $code = 'ctb' or $code = 'ths' or $code = 'sad' or $code = 'pbl'
+            <when test="//mods:name[@type='personal']/mods:role/mods:roleTerm[@type='code' and (.='aut' or .='cmp' or .='art')]">
+                <if test="$code = 'aut' or $code = 'cmp' or $code = 'art'">
+                    <dc:creator>
+                        <value-of select="if($familyName != '') then concat($familyName, ', ', $givenName) else $givenName"/>
+                    </dc:creator>
+                </if>
+                <if test="$code = 'rev' or $code = 'ctb' or $code = 'ths' or $code = 'sad' or $code = 'pbl'
        					or $code = 'ill' or $code = 'edt' or $code = 'oth' or $code = 'trl'">
-       			<dc:contributor>
-       				<value-of select="if($familyName != '') then concat($familyName, ',', $givenName) else $givenName" />
-       			</dc:contributor>
-       		</when>
+                    <dc:contributor>
+                        <value-of select="if($familyName != '') then concat($familyName, ', ', $givenName) else $givenName"/>
+                    </dc:contributor>
+                </if>
+            </when>
+            <otherwise>
+                <if test="$code = 'pbl'">
+                    <dc:creator>
+                        <value-of select="if($familyName != '') then concat($familyName, ', ', $givenName) else $givenName"/>
+                    </dc:creator>
+                </if>
+                <if test="$code = 'rev' or $code = 'ctb' or $code = 'ths' or $code = 'sad'
+       					or $code = 'ill' or $code = 'edt' or $code = 'oth' or $code = 'trl'">
+                    <dc:contributor>
+                        <value-of select="if($familyName != '') then concat($familyName, ', ', $givenName) else $givenName"/>
+                    </dc:contributor>
+                </if>
+            </otherwise>
         </choose>
     </template>
 
