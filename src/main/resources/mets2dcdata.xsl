@@ -167,9 +167,11 @@
             </otherwise>
         </choose>
 
+        <variable name="placeholder" select="('##AGENT##', '##PID##')"/>
         <if test="$agent and $qpid">
+            <variable name="values" select="($agent, $qpid)"/>
             <dc:identifier>
-                <value-of select="replace(replace('http://##AGENT##.qucosa.de/id/##PID##', '##AGENT##', $agent), '##PID##', $qpid)" />
+                <value-of select="myfunc:replace-multi('http://##AGENT##.qucosa.de/id/##PID##', $placeholder, $values)"/>
             </dc:identifier>
         </if>
     </template>
@@ -182,11 +184,14 @@
     </template>
 
     <template match="mets:fileSec">
+        <variable name="placeholder" select="('##AGENT##', '##PID##', '##DSID##')"/>
+
         <for-each select="mets:fileGrp[@USE='DOWNLOAD']/*">
             <sort select="@ID"/>
             <if test="$agent and $qpid">
+                <variable name="values" select="($agent, $qpid, ./@ID)"/>
                 <dc:identifier>
-                    <value-of select="replace(replace(replace($transfer_url_pattern, '##AGENT##', $agent), '##PID##', $qpid), '##DSID##', ./@ID)" />
+                    <value-of select="myfunc:replace-multi($transfer_url_pattern, $placeholder, $values)"/>
                 </dc:identifier>
             </if>
         </for-each>
@@ -474,6 +479,29 @@
                 <value-of select="$value"/>
             </otherwise>
         </choose>
+    </function>
+
+    <function name="myfunc:replace-multi" as="xs:string?">
+        <param name="arg" as="xs:string?"/>
+        <param name="changeFrom" as="xs:string*"/>
+        <param name="changeTo" as="xs:string*"/>
+        <sequence select="
+           if (count($changeFrom) > 0)
+           then myfunc:replace-multi(
+                  replace($arg, $changeFrom[1],
+                             myfunc:if-absent($changeTo[1],'')),
+                  $changeFrom[position() > 1],
+                  $changeTo[position() > 1])
+           else $arg"/>
+    </function>
+
+    <function name="myfunc:if-absent">
+        <param name="arg" as="item()*"/>
+        <param name="value" as="item()*"/>
+        <sequence select="
+            if (exists($arg))
+            then $arg
+            else $value"/>
     </function>
 
 </stylesheet>
