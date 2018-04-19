@@ -21,6 +21,7 @@
     <variable name="documentStatus" select="//mods:originInfo[@eventType='production']/mods:edition[1]" />
 
     <!-- URL parameter for substitutions (dc:identifier): frontpage-URL and transfer-URLs, passed from dissemination servlet -->
+    <param name="frontpage_url_pattern"/>
     <param name="transfer_url_pattern"/>
     <param name="qpid"/>
     <param name="agent"/>
@@ -171,7 +172,7 @@
         <if test="$agent and $qpid">
             <variable name="values" select="($agent, $qpid)"/>
             <dc:identifier>
-                <value-of select="myfunc:replace-multi('http://##AGENT##.qucosa.de/id/##PID##', $placeholder, $values)"/>
+                <value-of select="myfunc:replace-multi($frontpage_url_pattern, $placeholder, $values)"/>
             </dc:identifier>
         </if>
     </template>
