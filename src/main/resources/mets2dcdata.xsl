@@ -21,6 +21,7 @@
     <variable name="documentStatus" select="//mods:originInfo[@eventType='production']/mods:edition[1]" />
 
     <!-- URL parameter for substitutions (dc:identifier): frontpage-URL and transfer-URLs, passed from dissemination servlet -->
+    <param name="transfer_url_pattern"/>
     <param name="qpid"/>
     <param name="agent"/>
 
@@ -185,7 +186,7 @@
             <sort select="@ID"/>
             <if test="$agent and $qpid">
                 <dc:identifier>
-                    <value-of select="replace(replace(replace('http://##AGENT##.qucosa.de/api/##PID##/attachment/##ATT##', '##AGENT##', $agent), '##PID##', $qpid), '##ATT##', ./@ID)" />
+                    <value-of select="replace(replace(replace($transfer_url_pattern, '##AGENT##', $agent), '##PID##', $qpid), '##DSID##', ./@ID)" />
                 </dc:identifier>
             </if>
         </for-each>
