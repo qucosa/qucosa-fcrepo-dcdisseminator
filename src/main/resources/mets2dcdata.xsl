@@ -182,6 +182,7 @@
 
     <template match="mets:fileSec">
         <for-each select="mets:fileGrp[@USE='DOWNLOAD']/*">
+            <sort select="@ID"/>
             <if test="$agent and $qpid">
                 <dc:identifier>
                     <value-of select="replace(replace(replace('http://##AGENT##.qucosa.de/api/##PID##/attachment/##ATT##', '##AGENT##', $agent), '##PID##', $qpid), '##ATT##', ./@ID)" />
