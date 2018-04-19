@@ -51,16 +51,20 @@ public class DcDisseminationServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     private static final String REQUEST_PARAM_METS_URL = "metsurl";
+    private static final String PARAM_FRONTPAGE_URL_PATTERN = "frontpage.url.pattern";
+    private static final String PARAM_TRANSFER_URL_PATTERN = "transfer.url.pattern";
     private static final String PARAM_TRANSFER_URL_PIDENCODE = "transfer.url.pidencode";
     private static final String PARAM_AGENT_NAME_SUBSTITUTIONS = "agent.substitutions";
 
     private CloseableHttpClient httpClient;
     private ObjectPool<Transformer> transformerPool;
 
+    private String transferUrlPattern;
     private Map<String, String> agentNameSubstitutions;
     private boolean transferUrlPidencode = false;
 
     private XPathExpression XPATH_AGENT;
+    private String frontpageUrlPattern;
 
     @Override
     public void init() {
@@ -82,6 +86,12 @@ public class DcDisseminationServlet extends HttpServlet {
                 .build();
 
         ServletConfig servletConfig = getServletConfig();
+
+        frontpageUrlPattern = getParameterValue(servletConfig, PARAM_FRONTPAGE_URL_PATTERN,
+                System.getProperty(PARAM_FRONTPAGE_URL_PATTERN, ""));
+
+        transferUrlPattern = getParameterValue(servletConfig, PARAM_TRANSFER_URL_PATTERN,
+                System.getProperty(PARAM_TRANSFER_URL_PATTERN, ""));
 
         transferUrlPidencode = Boolean.valueOf(
                 getParameterValue(servletConfig, PARAM_TRANSFER_URL_PIDENCODE,
@@ -156,6 +166,8 @@ public class DcDisseminationServlet extends HttpServlet {
 
                     Transformer transformer = transformerPool.borrowObject();
 
+                    transformer.setParameter("frontpage_url_pattern", frontpageUrlPattern);
+                    transformer.setParameter("transfer_url_pattern", transferUrlPattern);
                     transformer.setParameter("agent", agentName);
                     transformer.setParameter("qpid", pid);
 

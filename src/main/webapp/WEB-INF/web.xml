@@ -21,6 +21,26 @@
 		  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 
     <!--
+        Context parameter defining the URL pattern for landing page URLs.
+        Placeholders ##AGENT##, ##PID## get replaced by their appropriate values,
+        which are extracted from the METS XML document.
+    -->
+    <context-param>
+        <param-name>frontpage.url.pattern</param-name>
+        <param-value>http://##AGENT##.example.com/##PID##</param-value>
+    </context-param>
+
+    <!--
+        Context parameter defining the URL pattern for file transfer.
+        Placeholders ##AGENT##, ##PID## and#DSID## get replaced by their appropriate values,
+        which are extracted from the METS XML document.
+    -->
+    <context-param>
+        <param-name>transfer.url.pattern</param-name>
+        <param-value>http://##AGENT##.example.com/##PID##/##DSID##</param-value>
+    </context-param>
+
+    <!--
         If `true` the objects PID gets URL encoded when constructing the transfer URL.
     -->
     <context-param>
