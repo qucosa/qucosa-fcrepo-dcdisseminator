@@ -220,12 +220,42 @@
     </template>
 
     <template match="mods:classification[@authority='ddc']">
-        <dc:subject>
-            <value-of select="concat('info:eu-repo/classification/ddc/', .)"/>
-        </dc:subject>
-        <dc:subject>
-            <value-of select="concat('ddc:', .)"/>
-        </dc:subject>
+        <call-template name="mapSubjectListDc">
+            <with-param name="subjects">
+                <value-of select="."/>
+            </with-param>
+        </call-template>
+    </template>
+
+    <template name="mapSubjectListDc">
+        <param name="subjects"/>
+        <choose>
+            <when test="contains($subjects, ',')">
+                <variable name="head" select="normalize-space(substring-before($subjects, ','))"/>
+                <variable name="tail" select="normalize-space(substring-after($subjects, ','))"/>
+                <element name="dc:subject">
+                    <value-of select="concat('info:eu-repo/classification/ddc/', $head)"/>
+                </element>
+                <element name="dc:subject">
+                    <value-of select="concat('ddc:', $head)"/>
+                </element>
+                <if test="string-length($tail) > 0">
+                    <call-template name="mapSubjectListDc">
+                        <with-param name="subjects">
+                            <value-of select="$tail"/>
+                        </with-param>
+                    </call-template>
+                </if>
+            </when>
+            <otherwise>
+                <element name="dc:subject">
+                    <value-of select="concat('info:eu-repo/classification/ddc/', $subjects)"/>
+                </element>
+                <element name="dc:subject">
+                    <value-of select="concat('ddc:', $subjects)"/>
+                </element>
+            </otherwise>
+        </choose>
     </template>
 
     <template match="mods:classification[@authority='z']">
