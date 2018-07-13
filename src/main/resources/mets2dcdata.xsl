@@ -270,82 +270,60 @@
         </dc:subject>
     </template>
 
-    <template match="mods:name[@type='personal']">
+
+    <template match="mods:name[@type='personal' and contains('aut cmp art', mods:role/mods:roleTerm[@type='code'][1])]">
         <variable name="familyName" select="mods:namePart[@type='family']"/>
         <variable name="givenName" select="mods:namePart[@type='given']"/>
-        <variable name="code" select="mods:role/mods:roleTerm[@type='code']/text()" />
+        <variable name="combined" select="if($givenName != '') then concat($familyName, ', ', $givenName) else $familyName"/>
+        <dc:creator>
+            <value-of select="$combined"/>
+        </dc:creator>
+    </template>
 
-        <!-- if there's no aut/cmp/art as creator then the publishing person should be creator -->
+    <template match="mods:name[@type='personal' and mods:role/mods:roleTerm[@type='code']='edt'
+                                                and not(//mods:name[@type='personal' and contains('aut cmp art', mods:role/mods:roleTerm[@type='code'])][1])]">
+        <variable name="familyName" select="mods:namePart[@type='family']"/>
+        <variable name="givenName" select="mods:namePart[@type='given']"/>
+        <variable name="combined" select="if($givenName != '') then concat($familyName, ', ', $givenName) else $familyName"/>
+        <dc:creator>
+            <value-of select="$combined"/>
+        </dc:creator>
+    </template>
+
+    <template match="mods:name[@type='personal' and contains('ctb dgs edt ill oth red rev sad ths trl', mods:role/mods:roleTerm[@type='code'][1])]">
+        <variable name="familyName" select="mods:namePart[@type='family']"/>
+        <variable name="givenName" select="mods:namePart[@type='given']"/>
+        <variable name="combined" select="if($givenName != '') then concat($familyName, ', ', $givenName) else $familyName"/>
+        <dc:contributor>
+            <value-of select="$combined"/>
+        </dc:contributor>
+    </template>
+
+    <template match="mods:name[@type='corporate' and mods:role/mods:roleTerm[@type='code']='edt']">
         <choose>
-            <when test="//mods:name[@type='personal']/mods:role/mods:roleTerm[@type='code' and (.='aut' or .='cmp' or .='art')]">
-                <if test="$code = 'aut' or $code = 'cmp' or $code = 'art'">
-                    <dc:creator>
-                        <value-of select="if($familyName != '') then concat($familyName, ', ', $givenName) else $givenName"/>
-                    </dc:creator>
-                </if>
-                <if test="$code = 'rev' or $code = 'ctb' or $code = 'ths' or $code = 'sad' or $code = 'pbl'
-       					or $code = 'ill' or $code = 'edt' or $code = 'oth' or $code = 'trl'">
-                    <dc:contributor>
-                        <value-of select="if($familyName != '') then concat($familyName, ', ', $givenName) else $givenName"/>
-                    </dc:contributor>
-                </if>
+            <when test="//mods:name[@type='personal' and contains('aut cmp art edt', mods:role/mods:roleTerm[@type='code'][1])]">
+                <dc:contributor>
+                    <value-of select="mods:namePart[1]"/>
+                </dc:contributor>
             </when>
             <otherwise>
-                <if test="$code = 'pbl'">
-                    <dc:creator>
-                        <value-of select="if($familyName != '') then concat($familyName, ', ', $givenName) else $givenName"/>
-                    </dc:creator>
-                </if>
-                <if test="$code = 'rev' or $code = 'ctb' or $code = 'ths' or $code = 'sad'
-       					or $code = 'ill' or $code = 'edt' or $code = 'oth' or $code = 'trl'">
-                    <dc:contributor>
-                        <value-of select="if($familyName != '') then concat($familyName, ', ', $givenName) else $givenName"/>
-                    </dc:contributor>
-                </if>
+                <dc:creator>
+                    <value-of select="mods:namePart[1]"/>
+                </dc:creator>
             </otherwise>
         </choose>
     </template>
 
-    <template match="mods:name[@type='corporate' and not(@displayLabel='mapping-hack-default-publisher')]">
-    	<variable name="code" select="mods:role/mods:roleTerm[@type='code']/text()" />
-    	<variable name="corporateID" select="@ID" />
-
-        <choose>
-        	<when test="$code = 'dgg'">
-        		<dc:contributor>
-        			<value-of select="mods:namePart[1]"/>
-        		</dc:contributor>
-        	</when>
-        	<when test="$code = 'edt' and not(../mods:name[@type='personal']/mods:role/mods:roleTerm[@type='code' and .='edt'])">
-        		<if test="../mods:extension/slub:info/slub:corporation[@ref=$corporateID]">
-        			<dc:creator>
-        				<value-of select="concat(mods:namePart[1], '.')"/>
-        				<value-of select="../mods:extension/slub:info/slub:corporation[@ref=$corporateID]/slub:*" separator="." />
-        			</dc:creator>
-        		</if>
-        		<if test="not(../mods:extension/slub:info/slub:corporation[@ref=$corporateID])">
-	        		<dc:contributor>
-	        			<value-of select="concat(mods:namePart[1], '.')"/>
-	        			<value-of select="../mods:extension/slub:info/slub:corporation[@ref=$corporateID]/slub:*" separator="." />
-	        		</dc:contributor>
-        		</if>
-        	</when>
-        	<when test="$code = 'pbl'">
-        		<dc:publisher>
-        			<value-of select="mods:namePart[1]" />
-        		</dc:publisher>
-        	</when>
-        </choose>
+    <template match="mods:name[@type='corporate' and contains('dgg oth', mods:role/mods:roleTerm[@type='code'][1])]">
+        <dc:contributor>
+            <value-of select="mods:namePart[1]"/>
+        </dc:contributor>
     </template>
 
-     <template match="mods:name[@type='corporate' and @displayLabel='mapping-hack-default-publisher']">
-     	<variable name="pblId" select="@ID" />
-
-     	<if test="not(../mods:name[@type='corporate' and mods:role/mods:roleTerm[@type='code']='pbl'])">
-       		<dc:publisher>
-       			<value-of select="../mods:extension/slub:info/slub:corporation[@ref=$pblId]/slub:university" />
-       		</dc:publisher>
-       	</if>
+    <template match="mods:name[@type='corporate' and mods:role/mods:roleTerm[@type='code']='pbl']">
+        <dc:publisher>
+            <value-of select="mods:namePart[1]"/>
+        </dc:publisher>
     </template>
 
     <!-- Distribution - Datum der Veröffentlichung im Repository -->
