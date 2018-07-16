@@ -321,7 +321,8 @@
         </choose>
     </template>
 
-    <template match="mods:name[@type='corporate' and contains('dgg oth', mods:role/mods:roleTerm[@type='code'][1])]">
+    <template match="mods:name[@type='corporate' and not(mods:role/mods:roleTerm[@type='code']='edt')
+                                    and myfunc:nodesMatch(mods:role/mods:roleTerm[@type='code'], 'dgg|oth')]">
         <dc:contributor>
             <value-of select="mods:namePart[1]"/>
         </dc:contributor>
