@@ -270,8 +270,7 @@
         </dc:subject>
     </template>
 
-
-    <template match="mods:name[@type='personal' and contains('aut cmp art', mods:role/mods:roleTerm[@type='code'][1])]">
+    <template match="mods:name[@type='personal' and myfunc:nodesMatch(mods:role/mods:roleTerm[@type='code'], 'aut|cmp|art')]">
         <variable name="familyName" select="mods:namePart[@type='family']"/>
         <variable name="givenName" select="mods:namePart[@type='given']"/>
         <variable name="combined" select="if($givenName != '') then concat($familyName, ', ', $givenName) else $familyName"/>
@@ -280,17 +279,25 @@
         </dc:creator>
     </template>
 
-    <template match="mods:name[@type='personal' and mods:role/mods:roleTerm[@type='code']='edt'
-                                                and not(//mods:name[@type='personal' and contains('aut cmp art', mods:role/mods:roleTerm[@type='code'])][1])]">
+    <template match="mods:name[@type='personal' and mods:role/mods:roleTerm[@type='code']='edt']">
         <variable name="familyName" select="mods:namePart[@type='family']"/>
         <variable name="givenName" select="mods:namePart[@type='given']"/>
         <variable name="combined" select="if($givenName != '') then concat($familyName, ', ', $givenName) else $familyName"/>
-        <dc:creator>
-            <value-of select="$combined"/>
-        </dc:creator>
+        <choose>
+            <when test="not(//mods:name[@type='personal' and myfunc:nodesMatch(mods:role/mods:roleTerm, 'aut|art|cmp')])">
+                <dc:creator>
+                    <value-of select="$combined"/>
+                </dc:creator>
+            </when>
+            <otherwise>
+                <dc:contributor>
+                    <value-of select="$combined"/>
+                </dc:contributor>
+            </otherwise>
+        </choose>
     </template>
 
-    <template match="mods:name[@type='personal' and contains('ctb dgs edt ill oth red rev sad ths trl', mods:role/mods:roleTerm[@type='code'][1])]">
+    <template match="mods:name[@type='personal' and myfunc:nodesMatch(mods:role/mods:roleTerm[@type='code'], 'ctb|dgs|ill|oth|red|rev|sad|ths|trl')]">
         <variable name="familyName" select="mods:namePart[@type='family']"/>
         <variable name="givenName" select="mods:namePart[@type='given']"/>
         <variable name="combined" select="if($givenName != '') then concat($familyName, ', ', $givenName) else $familyName"/>
@@ -511,6 +518,12 @@
             if (exists($arg))
             then $arg
             else $value"/>
+    </function>
+
+    <function name="myfunc:nodesMatch" as="xs:boolean">
+        <param name="nodes"/>
+        <param name="pattern" as="xs:string"/>
+        <value-of select="matches(string-join($nodes, ' '), $pattern)"/>
     </function>
 
 </stylesheet>
