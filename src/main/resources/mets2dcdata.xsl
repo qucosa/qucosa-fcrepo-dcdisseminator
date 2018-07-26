@@ -10,7 +10,7 @@
             version="2.0"
             xmlns="http://www.w3.org/1999/XSL/Transform"
             xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd
-    					http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd
+                        http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd
                         http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods.xsd
                         http://purl.org/dc/elements/1.1/ http://dublincore.org/schemas/xmls/qdc/2008/02/11/dc.xsd">
 
@@ -335,7 +335,7 @@
     </template>
 
     <!-- Distribution - Datum der Veröffentlichung im Repository -->
-	<template match="mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes']">
+    <template match="mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes']">
         <choose>
             <when test="string-length(normalize-space(.)) = 0">
                 <comment>dc:date could not be created, missing value in mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes']</comment>
@@ -346,10 +346,10 @@
                 </dc:date>
             </otherwise>
         </choose>
-	</template>
+    </template>
 
     <!-- Jahr der Erstveröffentlichung -->
-	<template match="mods:originInfo[@eventType='publication']/mods:dateIssued">
+    <template match="mods:originInfo[@eventType='publication']/mods:dateIssued">
         <choose>
             <when test="string-length(normalize-space(.)) = 0">
                 <comment>dc:date could not be created, missing value in mods:originInfo[@eventType='publication']/mods:dateIssued</comment>
@@ -363,7 +363,7 @@
     </template>
 
     <!--Datum der Einreichung-->
-	<template match="mods:originInfo[@eventType='publication']/mods:dateOther[@type='submission']">
+    <template match="mods:originInfo[@eventType='publication']/mods:dateOther[@type='submission']">
         <choose>
             <when test="string-length(normalize-space(.)) = 0">
                 <comment>dc:date could not be created, missing value in mods:originInfo[@eventType='publication']/mods:dateOther[@type='submission']</comment>
@@ -409,59 +409,60 @@
         <dc:rights>info:eu-repo/semantics/openAccess</dc:rights>
     </template>
 
-	<template match="mods:relatedItem[@type='original']/mods:note[@type='z']">
-		<dc:source>
-			<value-of select="." />
-		</dc:source>
-	</template>
+    <template match="mods:relatedItem[@type='original']/mods:note[@type='z']">
+        <dc:source>
+            <value-of select="." />
+        </dc:source>
+    </template>
 
-	<template match="mods:relatedItem[@type='original']">
-		<if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z'])">
+    <template match="mods:relatedItem[@type='original']">
+        <if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z'])">
             <variable name="startPage" select="../mods:part[@type='section']/mods:extent[@unit='pages']/mods:start"/>
             <variable name="endPage" select="../mods:part[@type='section']/mods:extent[@unit='pages']/mods:end"/>
             <variable name="title" select="mods:titleInfo/mods:title"/>
+            <variable name="subTitle" select="(mods:titleInfo/mods:subTitle)[1]"/>
             <choose>
-				<when test="$documentType = 'article'">
-					<dc:source>
-						<value-of select="concat($title, ' ', mods:part[@type='volume']/mods:detail/mods:number)" />
-						<value-of select="concat(' (', mods:part[@type='issue']/mods:detail/mods:number, ')')" />
-						<value-of select="concat(', S. ', $startPage, '-', $endPage)" />
-						<value-of select="if (mods:identifier[@type='issn']) then concat('. ISSN: ', mods:identifier[@type='issn']) else ''" />
-					</dc:source>
-				</when>
-				<!-- Document type `in_book` is to be replaced by `contained_work` in the future. -->
-				<!-- As soon as conferences are supported, `in_proceeding` and `contained_work` need to be different. -->
-				<when test="($documentType = 'in_proceeding') or ($documentType = 'contained_work') or ($documentType = 'in_book')">
-					<dc:source>
-						<value-of select="concat($title, ': ', mods:titleInfo/mods:subTitle, '.')"/>
-						<value-of select="concat(' ', mods:originInfo/mods:place/mods:placeTerm, ': ' , mods:originInfo/mods:publisher)"/>
-						<value-of select="concat(', S. ', $startPage, '-', $endPage)"/>
-						<value-of select="if(mods:identifier[@type='isbn']) then concat('. ISBN: ', mods:identifier[@type='isbn']) else ''" />
-					</dc:source>
-				</when>
-			</choose>
-		</if>
-	</template>
+                <when test="$documentType = 'article'">
+                    <dc:source>
+                        <value-of select="concat($title, ' ', mods:part[@type='volume']/mods:detail/mods:number)" />
+                        <value-of select="concat(' (', mods:part[@type='issue']/mods:detail/mods:number, ')')" />
+                        <value-of select="concat(', S. ', $startPage, '-', $endPage)" />
+                        <value-of select="if (mods:identifier[@type='issn']) then concat('. ISSN: ', mods:identifier[@type='issn']) else ''" />
+                    </dc:source>
+                </when>
+                <!-- Document type `in_book` is to be replaced by `contained_work` in the future. -->
+                <!-- As soon as conferences are supported, `in_proceeding` and `contained_work` need to be different. -->
+                <when test="($documentType = 'in_proceeding') or ($documentType = 'contained_work') or ($documentType = 'in_book')">
+                    <dc:source>
+                        <value-of select="concat($title, ': ', $subTitle, '.')"/>
+                        <value-of select="concat(' ', mods:originInfo/mods:place/mods:placeTerm, ': ' , mods:originInfo/mods:publisher)"/>
+                        <value-of select="concat(', S. ', $startPage, '-', $endPage)"/>
+                        <value-of select="if(mods:identifier[@type='isbn']) then concat('. ISBN: ', mods:identifier[@type='isbn']) else ''" />
+                    </dc:source>
+                </when>
+            </choose>
+        </if>
+    </template>
 
-	<template match="mods:relatedItem[@type='series']">
-		<if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z']) and $documentType='monograph'">
-			<dc:source>
-				<value-of select="mods:titleInfo/mods:title" />
-				<value-of select="if(mods:part[@type='volume']) then concat(' ; Bd. ', mods:part[@type='volume']/mods:detail/mods:number) else ''" />
-				<value-of select="if(mods:identifier[@type='issn']) then concat('. ISSN: ', mods:identifier[@type='issn']) else ''" />
-			</dc:source>
-		</if>
-	</template>
+    <template match="mods:relatedItem[@type='series']">
+        <if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z']) and $documentType='monograph'">
+            <dc:source>
+                <value-of select="mods:titleInfo/mods:title" />
+                <value-of select="if(mods:part[@type='volume']) then concat(' ; Bd. ', mods:part[@type='volume']/mods:detail/mods:number) else ''" />
+                <value-of select="if(mods:identifier[@type='issn']) then concat('. ISSN: ', mods:identifier[@type='issn']) else ''" />
+            </dc:source>
+        </if>
+    </template>
 
-	<template match="mods:relatedItem[@type='host']">
-		<if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z']) and $documentType='monograph'">
-			<dc:source>
-				<value-of select="mods:titleInfo/mods:title" />
-				<value-of select="if(mods:part[@type='volume']) then concat('. Bd. ', mods:part[@type='volume']/mods:detail/mods:number) else ''" />
-				<value-of select="if(mods:identifier[@type='isbn']) then concat('. ISBN: ', mods:identifier[@type='isbn']) else ''" />
-			</dc:source>
-		</if>
-	</template>
+    <template match="mods:relatedItem[@type='host']">
+        <if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z']) and $documentType='monograph'">
+            <dc:source>
+                <value-of select="mods:titleInfo/mods:title" />
+                <value-of select="if(mods:part[@type='volume']) then concat('. Bd. ', mods:part[@type='volume']/mods:detail/mods:number) else ''" />
+                <value-of select="if(mods:identifier[@type='isbn']) then concat('. ISBN: ', mods:identifier[@type='isbn']) else ''" />
+            </dc:source>
+        </if>
+    </template>
 
     <!-- eat all unmatched text content -->
     <template match="text()"/>
@@ -471,15 +472,17 @@
     <function name="myfunc:formatDateTime" as="xs:string">
         <param name="value" as="xs:string"/>
         <choose>
-            <when test="string-length($value)=4">
-                <value-of select="$value"/>
-            </when>
             <when test="contains($value, 'T')">
                 <value-of select="format-dateTime(xs:dateTime(myfunc:formatTimezoneHour($value)), '[Y0001]-[M01]-[D01]')"/>
             </when>
-            <otherwise>
+            <when test="matches($value, '^\d{4}(-\d{2}){2}$')">
                 <value-of select="format-date(xs:date($value), '[Y0001]-[M01]-[D01]')"/>
-                <!--<value-of select="." />-->
+            </when>
+            <when test="matches($value, '^\[\d{4}\]$')">
+                <value-of select="replace($value, '[\[\]]', '')"/>
+            </when>
+            <otherwise>
+                <value-of select="$value" />
             </otherwise>
         </choose>
     </function>
