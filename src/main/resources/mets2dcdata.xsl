@@ -471,15 +471,17 @@
     <function name="myfunc:formatDateTime" as="xs:string">
         <param name="value" as="xs:string"/>
         <choose>
-            <when test="string-length($value)=4">
-                <value-of select="$value"/>
-            </when>
             <when test="contains($value, 'T')">
                 <value-of select="format-dateTime(xs:dateTime(myfunc:formatTimezoneHour($value)), '[Y0001]-[M01]-[D01]')"/>
             </when>
-            <otherwise>
+            <when test="matches($value, '^\d{4}(-\d{2}){2}$')">
                 <value-of select="format-date(xs:date($value), '[Y0001]-[M01]-[D01]')"/>
-                <!--<value-of select="." />-->
+            </when>
+            <when test="matches($value, '^\[\d{4}\]$')">
+                <value-of select="replace($value, '[\[\]]', '')"/>
+            </when>
+            <otherwise>
+                <value-of select="$value" />
             </otherwise>
         </choose>
     </function>
