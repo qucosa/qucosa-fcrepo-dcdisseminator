@@ -420,6 +420,7 @@
             <variable name="startPage" select="../mods:part[@type='section']/mods:extent[@unit='pages']/mods:start"/>
             <variable name="endPage" select="../mods:part[@type='section']/mods:extent[@unit='pages']/mods:end"/>
             <variable name="title" select="mods:titleInfo/mods:title"/>
+            <variable name="subTitle" select="(mods:titleInfo/mods:subTitle)[1]"/>
             <choose>
                 <when test="$documentType = 'article'">
                     <dc:source>
@@ -433,7 +434,7 @@
                 <!-- As soon as conferences are supported, `in_proceeding` and `contained_work` need to be different. -->
                 <when test="($documentType = 'in_proceeding') or ($documentType = 'contained_work') or ($documentType = 'in_book')">
                     <dc:source>
-                        <value-of select="concat($title, ': ', mods:titleInfo/mods:subTitle, '.')"/>
+                        <value-of select="concat($title, ': ', $subTitle, '.')"/>
                         <value-of select="concat(' ', mods:originInfo/mods:place/mods:placeTerm, ': ' , mods:originInfo/mods:publisher)"/>
                         <value-of select="concat(', S. ', $startPage, '-', $endPage)"/>
                         <value-of select="if(mods:identifier[@type='isbn']) then concat('. ISBN: ', mods:identifier[@type='isbn']) else ''" />
