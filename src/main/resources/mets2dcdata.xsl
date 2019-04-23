@@ -53,11 +53,11 @@
         <apply-templates select="mods:relatedItem[@type='original']" />
         <apply-templates select="mods:relatedItem[@type='series']" />
         <apply-templates select="mods:relatedItem[@type='host']" />
+        <apply-templates select="mods:name[@type='corporate' and mods:role/mods:roleTerm[@type='code']='fnd']" mode="dc:relation"/>
     </template>
 
     <template match="slub:info">
         <apply-templates select="slub:documentType"/>
-        <apply-templates select="." mode="dc:relation"/>
     </template>
 
     <template match="mods:titleInfo">
@@ -334,6 +334,23 @@
         </dc:publisher>
     </template>
 
+    <template match="mods:name[@type='corporate' and mods:role/mods:roleTerm[@type='code']='fnd']" mode="dc:relation">
+        <variable name="id" select="@ID"/>
+        <variable name="prj" select="../mods:extension/slub:info/slub:project[@ref=$id]"/>
+        <variable name="funder" select="./mods:namePart"/>
+        <variable name="fundingProgram" select="$prj/slub:fundingprogram"/>
+        <variable name="projectID" select="$prj/@uid"/>
+        <variable name="projectName" select="$prj/@name"/>
+        <variable name="projectLabel" select="$prj/@label"/>
+        <if test="$funder != '' and $fundingProgram != '' and $projectID != ''">
+            <dc:relation>
+                <text>info:eu-repo/grantAgreement/</text>
+                <value-of
+                        select="string-join(($funder, $fundingProgram, $projectID,'' ,$projectName, $projectLabel), '/')"/>
+            </dc:relation>
+        </if>
+    </template>
+
     <!-- Distribution - Datum der Veröffentlichung im Repository -->
     <template match="mods:originInfo[@eventType='distribution']/mods:dateIssued[@keyDate='yes']">
         <choose>
@@ -388,17 +405,6 @@
                 </dc:date>
             </otherwise>
         </choose>
-    </template>
-
-    <template match="slub:info" mode="dc:relation">
-        <variable name="Funder" select="./slub:juristiction"/>
-        <variable name="FundingProgram" select="./slub:funding"/>
-        <variable name="ProjectID" select="./slub:project/@uid"/>
-        <if test="$Funder != '' and $FundingProgram != '' and $ProjectID != ''">
-            <dc:relation>
-                info:eu-repo/grantAgreement/<value-of select="$Funder"/>/<value-of select="$FundingProgram"/>/<value-of select="$ProjectID"/>
-            </dc:relation>
-        </if>
     </template>
 
     <template match="slub:info[slub:collections/slub:collection='nonOA']">
