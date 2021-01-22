@@ -49,8 +49,8 @@
         <apply-templates select="mods:name[@type='personal']"/>
         <apply-templates select="mods:name[@type='corporate']"/>
         <apply-templates select="mods:originInfo" />
-        <apply-templates select="mods:relatedItem[@type='original']/mods:note[@type='z']" />
-        <apply-templates select="mods:relatedItem[@type='original']" />
+        <apply-templates select="mods:relatedItem[@type='host']/mods:note[@type='z']" />
+        <apply-templates select="mods:relatedItem[@type='host']" />
         <apply-templates select="mods:relatedItem[@type='series']" />
         <apply-templates select="mods:relatedItem[@type='host']" />
         <apply-templates select="mods:name[@type='corporate' and mods:role/mods:roleTerm[@type='code']='fnd']" mode="dc:relation"/>
@@ -415,14 +415,14 @@
         <dc:rights>info:eu-repo/semantics/openAccess</dc:rights>
     </template>
 
-    <template match="mods:relatedItem[@type='original']/mods:note[@type='z']">
+    <template match="mods:relatedItem[@type='host']/mods:note[@type='z']">
         <dc:source>
             <value-of select="." />
         </dc:source>
     </template>
 
-    <template match="mods:relatedItem[@type='original']">
-        <if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z'])">
+    <template match="mods:relatedItem[@type='host']">
+        <if test="not(../mods:relatedItem[@type='host']/mods:note[@type='z'])">
             <variable name="startPage" select="../mods:part[@type='section']/mods:extent[@unit='pages']/mods:start"/>
             <variable name="endPage" select="../mods:part[@type='section']/mods:extent[@unit='pages']/mods:end"/>
             <variable name="title" select="mods:titleInfo/mods:title"/>
@@ -451,7 +451,7 @@
     </template>
 
     <template match="mods:relatedItem[@type='series']">
-        <if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z']) and $documentType='monograph'">
+        <if test="not(../mods:relatedItem[@type='host']/mods:note[@type='z']) and $documentType='monograph'">
             <dc:source>
                 <value-of select="mods:titleInfo/mods:title" />
                 <value-of select="if(mods:part[@type='volume']) then concat(' ; Bd. ', mods:part[@type='volume']/mods:detail/mods:number) else ''" />
@@ -461,7 +461,7 @@
     </template>
 
     <template match="mods:relatedItem[@type='host']">
-        <if test="not(../mods:relatedItem[@type='original']/mods:note[@type='z']) and $documentType='monograph'">
+        <if test="not(../mods:relatedItem[@type='host']/mods:note[@type='z']) and $documentType='monograph'">
             <dc:source>
                 <value-of select="mods:titleInfo/mods:title" />
                 <value-of select="if(mods:part[@type='volume']) then concat('. Bd. ', mods:part[@type='volume']/mods:detail/mods:number) else ''" />
